@@ -1,0 +1,141 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "allow_rename": 1,
+ "autoname": "field:scheme_name",
+ "creation": "2026-09-03 10:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "scheme_name",
+  "company",
+  "column_break_3",
+  "is_default",
+  "disabled",
+  "section_break_config",
+  "calculation_type",
+  "salary_component",
+  "description",
+  "slabs_section",
+  "slabs"
+ ],
+ "fields": [
+  {
+   "fieldname": "scheme_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Scheme Name",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "description": "If checked, this scheme applies as the default for all Sales Persons in the company who do not have an overriding scheme.",
+   "fieldname": "is_default",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Is Default for Company"
+  },
+  {
+   "default": "0",
+   "fieldname": "disabled",
+   "fieldtype": "Check",
+   "label": "Disabled"
+  },
+  {
+   "fieldname": "section_break_config",
+   "fieldtype": "Section Break",
+   "label": "Configuration"
+  },
+  {
+   "default": "Flat Tier Rate",
+   "description": "Flat Tier Rate: The matched tier percentage applies to the entire net sales amount (e.g. 70,000 in 60k-80k tier @ 3% = 2,100).\\nProgressive Marginal Slabs: Each tier percentage applies only to the portion within that tier range.",
+   "fieldname": "calculation_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Calculation Type",
+   "options": "Flat Tier Rate\nProgressive Marginal Slabs",
+   "reqd": 1
+  },
+  {
+   "default": "Sales Commission",
+   "description": "Salary Component used when generating Additional Salary entries for payroll.",
+   "fieldname": "salary_component",
+   "fieldtype": "Link",
+   "label": "Salary Component",
+   "options": "Salary Component",
+   "reqd": 1
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Description"
+  },
+  {
+   "fieldname": "slabs_section",
+   "fieldtype": "Section Break",
+   "label": "Commission Slabs"
+  },
+  {
+   "description": "Define sales ranges and commission percentages. Set To Amount to 0 for no upper limit (e.g. 80,000+).",
+   "fieldname": "slabs",
+   "fieldtype": "Table",
+   "label": "Slabs",
+   "options": "Sales Commission Slab",
+   "reqd": 1
+  }
+ ],
+ "links": [],
+ "modified": "2026-09-03 10:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Payroll",
+ "name": "Sales Commission Scheme",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "HR Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "HR User",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "Accounts Manager"
+  }
+ ],
+ "search_fields": "scheme_name,company",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}
