@@ -3,7 +3,7 @@
 
 import json
 import frappe
-from frappe.utils import flt
+from frappe.utils import flt, getdate, nowdate
 
 @frappe.whitelist()
 def get_cash_in_hand():
@@ -29,6 +29,29 @@ def get_cash_in_hand():
 	return {"value": flt(balance, 2), "fieldtype": "Currency"}
 
 
+def ensure_default_holiday_list():
+	"""Ensures a default Holiday List exists for companies and employees to prevent payroll calculation errors."""
+	companies = frappe.get_all("Company", fields=["name", "default_holiday_list"])
+	for comp in companies:
+		if not comp.default_holiday_list or not frappe.db.exists("Holiday List", comp.default_holiday_list):
+			hl_name = f"{comp.name} Standard Holiday List"
+			if not frappe.db.exists("Holiday List", hl_name):
+				current_year = getdate(nowdate()).year
+				hl = frappe.get_doc({
+					"doctype": "Holiday List",
+					"holiday_list_name": hl_name,
+					"from_date": f"{current_year}-01-01",
+					"to_date": f"{current_year}-12-31",
+					"weekly_off": "Sunday"
+				})
+				hl.get_weekly_off_dates()
+				hl.insert(ignore_permissions=True)
+			else:
+				hl = frappe.get_doc("Holiday List", hl_name)
+
+			frappe.db.set_value("Company", comp.name, "default_holiday_list", hl.name)
+
+
 def upsert_number_cards():
 	"""Idempotently creates or updates retail number cards."""
 	company = frappe.defaults.get_user_default("Company") or frappe.db.get_single_value("Global Defaults", "default_company")
@@ -48,7 +71,7 @@ def upsert_number_cards():
 			"aggregate_function_based_on": "grand_total",
 			"filters_json": json.dumps([
 				["Sales Invoice", "docstatus", "=", "1", False],
-				["Sales Invoice", "posting_date", "=", "Today", False]
+				["Sales Invoice", "posting_date", "Timespan", "today", False]
 			]),
 			"is_public": 1,
 			"module": "Accounts"
@@ -315,11 +338,12 @@ def setup_home_workspace():
 	orig_in_migrate = getattr(frappe.flags, "in_migrate", False)
 	frappe.flags.in_migrate = True
 	try:
+		ensure_default_holiday_list()
 		upsert_number_cards()
 		upsert_dashboard_charts()
 		configure_home_workspace()
 		frappe.db.commit()
-		print("Successfully initialized Retail Home Workspace, Number Cards, and Dashboard Charts.")
+		print("Successfully initialized Retail Home Workspace, Holiday Lists, Number Cards, and Dashboard Charts.")
 	except Exception as e:
 		frappe.log_error(f"Error setting up retail home workspace: {e}", "Setup Retail Workspace")
 		print(f"Warning: could not setup retail home workspace: {e}")
