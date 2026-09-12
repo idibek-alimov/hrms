@@ -238,6 +238,8 @@ def configure_home_workspace():
 		{"id": "sc_5", "type": "shortcut", "data": {"shortcut_name": "Payment Entry", "col": 3}},
 		{"id": "sc_6", "type": "shortcut", "data": {"shortcut_name": "Additional Salary", "col": 3}},
 		{"id": "sc_7", "type": "shortcut", "data": {"shortcut_name": "Stock Balance", "col": 3}},
+		{"id": "sc_8", "type": "shortcut", "data": {"shortcut_name": "Quick Expense", "col": 3}},
+		{"id": "sc_9", "type": "shortcut", "data": {"shortcut_name": "Quick Product Intake", "col": 3}},
 		{"id": "sp_2", "type": "spacer", "data": {"col": 12}},
 
 		{"id": "dc_hdr", "type": "header", "data": {"text": "<span class=\"h4\"><b>Retail & Performance Analytics</b></span>", "col": 12}},
@@ -273,11 +275,13 @@ def configure_home_workspace():
 	shortcuts = [
 		{"label": "Point of Sale", "link_to": "point-of-sale", "type": "Page", "color": "Blue"},
 		{"label": "Item", "link_to": "Item", "type": "DocType", "color": "Grey"},
+		{"label": "Quick Product Intake", "link_to": "Quick Product Intake", "type": "DocType", "color": "Blue"},
 		{"label": "Stock Entry", "link_to": "Stock Entry", "type": "DocType", "color": "Grey"},
 		{"label": "Purchase Receipt", "link_to": "Purchase Receipt", "type": "DocType", "color": "Grey"},
 		{"label": "Payment Entry", "link_to": "Payment Entry", "type": "DocType", "color": "Grey"},
 		{"label": "Additional Salary", "link_to": "Additional Salary", "type": "DocType", "color": "Grey"},
-		{"label": "Stock Balance", "link_to": "Stock Balance", "type": "Report", "color": "Green"}
+		{"label": "Stock Balance", "link_to": "Stock Balance", "type": "Report", "color": "Green"},
+		{"label": "Quick Expense", "link_to": "Quick Expense", "type": "DocType", "color": "Green"}
 	]
 
 	links = [
@@ -289,6 +293,7 @@ def configure_home_workspace():
 		{"label": "POS Register", "link_type": "Report", "link_to": "POS Register", "type": "Link", "is_query_report": 1},
 
 		{"label": "Inventory Management", "type": "Card Break"},
+		{"label": "Quick Product Intake", "link_type": "DocType", "link_to": "Quick Product Intake", "type": "Link"},
 		{"label": "Item", "link_type": "DocType", "link_to": "Item", "type": "Link"},
 		{"label": "Stock Ledger", "link_type": "Report", "link_to": "Stock Ledger", "type": "Link", "is_query_report": 1},
 		{"label": "Item Price", "link_type": "DocType", "link_to": "Item Price", "type": "Link"},
