@@ -240,6 +240,7 @@ def configure_home_workspace():
 		{"id": "sc_7", "type": "shortcut", "data": {"shortcut_name": "Stock Balance", "col": 3}},
 		{"id": "sc_8", "type": "shortcut", "data": {"shortcut_name": "Quick Expense", "col": 3}},
 		{"id": "sc_9", "type": "shortcut", "data": {"shortcut_name": "Quick Product Intake", "col": 3}},
+		{"id": "sc_10", "type": "shortcut", "data": {"shortcut_name": "Каталоги молҳо", "col": 3}},
 		{"id": "sp_2", "type": "spacer", "data": {"col": 12}},
 
 		{"id": "dc_hdr", "type": "header", "data": {"text": "<span class=\"h4\"><b>Retail & Performance Analytics</b></span>", "col": 12}},
@@ -274,8 +275,9 @@ def configure_home_workspace():
 
 	shortcuts = [
 		{"label": "Point of Sale", "link_to": "point-of-sale", "type": "Page", "color": "Blue"},
-		{"label": "Item", "link_to": "Item", "type": "DocType", "color": "Grey"},
+		{"label": "Каталоги молҳо", "link_to": "product-catalog", "type": "Page", "color": "Blue"},
 		{"label": "Quick Product Intake", "link_to": "Quick Product Intake", "type": "DocType", "color": "Blue"},
+		{"label": "Item", "link_to": "Item", "type": "DocType", "color": "Grey"},
 		{"label": "Stock Entry", "link_to": "Stock Entry", "type": "DocType", "color": "Grey"},
 		{"label": "Purchase Receipt", "link_to": "Purchase Receipt", "type": "DocType", "color": "Grey"},
 		{"label": "Payment Entry", "link_to": "Payment Entry", "type": "DocType", "color": "Grey"},
@@ -293,6 +295,7 @@ def configure_home_workspace():
 		{"label": "POS Register", "link_type": "Report", "link_to": "POS Register", "type": "Link", "is_query_report": 1},
 
 		{"label": "Inventory Management", "type": "Card Break"},
+		{"label": "Каталоги молҳо (Каталог товаров)", "link_type": "Page", "link_to": "product-catalog", "type": "Link"},
 		{"label": "Quick Product Intake", "link_type": "DocType", "link_to": "Quick Product Intake", "type": "Link"},
 		{"label": "Item", "link_type": "DocType", "link_to": "Item", "type": "Link"},
 		{"label": "Stock Ledger", "link_type": "Report", "link_to": "Stock Ledger", "type": "Link", "is_query_report": 1},
