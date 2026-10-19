@@ -297,6 +297,7 @@ def configure_home_workspace():
 		{"label": "Inventory Management", "type": "Card Break"},
 		{"label": "Каталоги молҳо (Каталог товаров)", "link_type": "Page", "link_to": "product-catalog", "type": "Link"},
 		{"label": "Quick Product Intake", "link_type": "DocType", "link_to": "Quick Product Intake", "type": "Link"},
+		{"label": "Quick Product Restock", "link_type": "DocType", "link_to": "Quick Product Restock", "type": "Link"},
 		{"label": "Item", "link_type": "DocType", "link_to": "Item", "type": "Link"},
 		{"label": "Stock Ledger", "link_type": "Report", "link_to": "Stock Ledger", "type": "Link", "is_query_report": 1},
 		{"label": "Item Price", "link_type": "DocType", "link_to": "Item Price", "type": "Link"},
