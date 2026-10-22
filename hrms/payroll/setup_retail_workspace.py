@@ -277,6 +277,7 @@ def configure_home_workspace():
 		{"label": "Point of Sale", "link_to": "point-of-sale", "type": "Page", "color": "Blue"},
 		{"label": "Каталоги молҳо", "link_to": "product-catalog", "type": "Page", "color": "Blue"},
 		{"label": "Quick Product Intake", "link_to": "Quick Product Intake", "type": "DocType", "color": "Blue"},
+		{"label": "Quick Discount", "link_to": "Quick Discount", "type": "DocType", "color": "Orange"},
 		{"label": "Item", "link_to": "Item", "type": "DocType", "color": "Grey"},
 		{"label": "Stock Entry", "link_to": "Stock Entry", "type": "DocType", "color": "Grey"},
 		{"label": "Purchase Receipt", "link_to": "Purchase Receipt", "type": "DocType", "color": "Grey"},
@@ -291,6 +292,7 @@ def configure_home_workspace():
 		{"label": "POS Opening Entry", "link_type": "DocType", "link_to": "POS Opening Entry", "type": "Link"},
 		{"label": "POS Closing Entry", "link_type": "DocType", "link_to": "POS Closing Entry", "type": "Link"},
 		{"label": "Sales Invoice", "link_type": "DocType", "link_to": "Sales Invoice", "type": "Link"},
+		{"label": "Quick Discount", "link_type": "DocType", "link_to": "Quick Discount", "type": "Link"},
 		{"label": "Customer", "link_type": "DocType", "link_to": "Customer", "type": "Link"},
 		{"label": "POS Register", "link_type": "Report", "link_to": "POS Register", "type": "Link", "is_query_report": 1},
 
@@ -298,6 +300,7 @@ def configure_home_workspace():
 		{"label": "Каталоги молҳо (Каталог товаров)", "link_type": "Page", "link_to": "product-catalog", "type": "Link"},
 		{"label": "Quick Product Intake", "link_type": "DocType", "link_to": "Quick Product Intake", "type": "Link"},
 		{"label": "Quick Product Restock", "link_type": "DocType", "link_to": "Quick Product Restock", "type": "Link"},
+		{"label": "Quick Discount (Скидки и акции)", "link_type": "DocType", "link_to": "Quick Discount", "type": "Link"},
 		{"label": "Item", "link_type": "DocType", "link_to": "Item", "type": "Link"},
 		{"label": "Stock Ledger", "link_type": "Report", "link_to": "Stock Ledger", "type": "Link", "is_query_report": 1},
 		{"label": "Item Price", "link_type": "DocType", "link_to": "Item Price", "type": "Link"},
