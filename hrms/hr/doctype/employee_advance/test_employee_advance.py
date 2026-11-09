@@ -174,7 +174,9 @@ class TestEmployeeAdvance(FrappeTestCase):
 		journal_entry.submit()
 
 		args = {"type": "Deduction"}
-		create_salary_component("Advance Salary - Deduction", **args)
+		component = create_salary_component("Advance Salary - Deduction", **args)
+		component.append("accounts", {"company": advance.company, "account": advance.advance_account})
+		component.save()
 		make_salary_structure(
 			"Test Additional Salary for Advance Return",
 			"Monthly",

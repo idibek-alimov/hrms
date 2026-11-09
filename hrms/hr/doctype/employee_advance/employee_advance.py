@@ -5,7 +5,7 @@
 import frappe
 from frappe import _
 from frappe.model.document import Document
-from frappe.query_builder.functions import Abs, Sum
+from frappe.query_builder.functions import Sum
 from frappe.utils import flt, get_link_to_form, nowdate
 
 import erpnext
@@ -117,53 +117,47 @@ class EmployeeAdvance(Document):
 			self.status = status
 
 	def set_total_advance_paid(self):
+		# Serialize all sources on the advance. Current reads below are deliberate:
+		# a transaction may already have a repeatable-read snapshot from validation.
+		self.load_from_db_for_recovery()
 		aple = frappe.qb.DocType("Advance Payment Ledger Entry")
 
-		account_type, account_curreny = frappe.get_value(
+		account_type, account_currency = frappe.get_value(
 			"Account", self.advance_account, ["account_type", "account_currency"]
 		)
 
 		company_currency = frappe.get_value("Company", self.company, "default_currency")
 
-		if account_type == "Receivable":
-			paid_amount_condition = aple.amount > 0
-			returned_amount_condition = aple.amount < 0
-		elif account_type == "Payable":
-			paid_amount_condition = aple.amount < 0
-			returned_amount_condition = aple.amount > 0
-		else:
+		if account_type not in ("Receivable", "Payable"):
 			frappe.throw(
 				_("Employee advance account {0} should be of type {1}").format(
 					frappe.bold(self.advance_account), frappe.bold("Receivable")
 				)
 			)
 
-		paid_amount = (
+		entries = (
 			frappe.qb.from_(aple)
-			.select(Abs(Sum(aple.amount)).as_("paid_amount"))
+			.select(aple.amount, aple.voucher_type, aple.voucher_no)
 			.where(
 				(aple.company == self.company)
 				& (aple.delinked == 0)
 				& (aple.against_voucher_type == self.doctype)
 				& (aple.against_voucher_no == self.name)
-				& (paid_amount_condition)
 			)
-		).run(as_dict=True)[0].paid_amount or 0
-		return_amount = (
-			frappe.qb.from_(aple)
-			.select(Abs(Sum(aple.amount)).as_("return_amount"))
-			.where(
-				(aple.company == self.company)
-				& (aple.delinked == 0)
-				& (aple.against_voucher_type == self.doctype)
-				& (aple.against_voucher_no == self.name)
-				& (returned_amount_condition)
-			)
-		).run(as_dict=True)[0].return_amount or 0
+			.for_update()
+		).run(as_dict=True)
+		# Retain the ledger sign convention for historical payable advances.
+		if account_type == "Payable":
+			for row in entries:
+				row.amount = -row.amount
+		paid_amount = sum(flt(row.amount) for row in entries if row.amount > 0)
+		return_amount = -sum(flt(row.amount) for row in entries if row.amount < 0)
 
-		if company_currency != self.currency and account_curreny == company_currency:
+		if company_currency != self.currency and account_currency == company_currency:
 			paid_amount = flt(paid_amount) / flt(self.exchange_rate)
 			return_amount = flt(return_amount) / flt(self.exchange_rate)
+
+		return_amount += self.get_unposted_salary_recovery(entries)
 
 		precision = self.precision("paid_amount")
 		paid_amount = flt(paid_amount, precision)
@@ -176,14 +170,70 @@ class EmployeeAdvance(Document):
 		precision = self.precision("return_amount")
 		return_amount = flt(return_amount, precision)
 
-		if return_amount > 0 and return_amount > flt(paid_amount - self.claimed_amount, precision):
-			frappe.throw(_("Return amount cannot be greater than unclaimed amount"))
+		if flt(return_amount + flt(self.claimed_amount), precision) > flt(paid_amount, precision):
+			frappe.throw(_("Claimed and returned amounts cannot exceed the funded advance amount"))
 
 		self.db_set("paid_amount", paid_amount)
 		self.db_set("return_amount", return_amount)
 		self.set_status(update=True)
 
+	def load_from_db_for_recovery(self):
+		advance = frappe.get_doc(self.doctype, self.name, for_update=True)
+		self.update(advance.as_dict())
+
+	def get_unposted_salary_recovery(self, entries):
+		"""Keep submitted reservations, excluding deductions already in active APLE.
+
+		Payroll creates APLE before linking the JE back onto the slips, so use the
+		JE's native Payroll Entry reference. Cash-return JEs have no such reference.
+		The source amount stays reserved after accrual reversal until its Additional
+		Salary is cancelled. A submitted slip alone never proves a posted recovery.
+		"""
+		recoveries = frappe.db.sql(
+			"""select name, amount from `tabAdditional Salary`
+			where ref_doctype='Employee Advance' and ref_docname=%s and docstatus=1
+			for update""",
+			self.name,
+			as_dict=True,
+		)
+		if not recoveries:
+			return 0
+
+		posted = {}
+		journals = sorted(
+			{row.voucher_no for row in entries if row.voucher_type == "Journal Entry" and row.amount < 0}
+		)
+		if journals:
+			rows = frappe.db.sql(
+				"""select distinct sd.name, sd.additional_salary, sd.amount
+				from `tabSalary Detail` sd
+				inner join `tabSalary Slip` ss on ss.name=sd.parent and sd.parenttype='Salary Slip'
+				inner join `tabJournal Entry Account` ja on ja.reference_type='Payroll Entry'
+					and ja.reference_name=ss.payroll_entry and ja.parenttype='Journal Entry'
+				inner join `tabJournal Entry` je on je.name=ja.parent
+				inner join `tabAdditional Salary` ads on ads.name=sd.additional_salary
+				where je.name in %(journals)s and je.docstatus=1
+					and ss.docstatus in (1, 2) and sd.parentfield='deductions'
+					and ads.ref_doctype='Employee Advance' and ads.ref_docname=%(advance)s
+				for update""",
+				{"journals": journals, "advance": self.name},
+				as_dict=True,
+			)
+			for row in rows:
+				posted[row.additional_salary] = posted.get(row.additional_salary, 0) + flt(row.amount)
+
+		unposted = 0
+		precision = self.precision("return_amount")
+		for row in recoveries:
+			amount = flt(row.amount, precision)
+			posted_amount = flt(posted.get(row.name, 0), precision)
+			if posted_amount > amount:
+				frappe.throw(_("Posted salary recovery cannot exceed the linked deduction amount"))
+			unposted += amount - posted_amount
+		return unposted
+
 	def update_claimed_amount(self):
+		self.load_from_db_for_recovery()
 		claimed_amount = (
 			frappe.db.sql(
 				"""
@@ -195,6 +245,7 @@ class EmployeeAdvance(Document):
 				AND ec.name = eca.parent
 				AND ec.docstatus=1
 				AND eca.allocated_amount > 0
+			FOR UPDATE
 		""",
 				self.name,
 			)[0][0]
@@ -202,8 +253,7 @@ class EmployeeAdvance(Document):
 		)
 
 		frappe.db.set_value("Employee Advance", self.name, "claimed_amount", flt(claimed_amount))
-		self.reload()
-		self.set_status(update=True)
+		self.set_total_advance_paid()
 
 	def set_pending_amount(self):
 		Advance = frappe.qb.DocType("Employee Advance")
@@ -313,11 +363,15 @@ def create_return_through_additional_salary(doc):
 	if isinstance(doc, str):
 		doc = frappe._dict(json.loads(doc))
 
+	# Use the authorized source, not amounts or identity supplied by the browser.
+	doc = frappe.get_doc("Employee Advance", doc.name)
+	doc.check_permission("read")
+
 	additional_salary = frappe.new_doc("Additional Salary")
 	additional_salary.employee = doc.employee
 	additional_salary.currency = doc.currency
 	additional_salary.overwrite_salary_structure_amount = 0
-	additional_salary.amount = doc.paid_amount - doc.claimed_amount
+	additional_salary.amount = flt(doc.paid_amount) - flt(doc.claimed_amount) - flt(doc.return_amount)
 	additional_salary.company = doc.company
 	additional_salary.ref_doctype = doc.doctype
 	additional_salary.ref_docname = doc.name

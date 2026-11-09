@@ -1,0 +1,4 @@
+"Advance recovery requires a non-recurring deduction for the same employee, company and currency.","Барои баргардонидани пешпардохт нигоҳдории якдафъаина барои ҳамон корманд, ширкат ва асъор зарур аст.",
+The recovery salary component must use the employee advance account.,Ҷузъи нигоҳдорӣ бояд ҳисоби пешпардохти кормандонро истифода барад.,
+Claimed and returned amounts cannot exceed the funded advance amount,Маблағи пешпардохти истифодашуда ва баргардонидашуда набояд аз маблағи пардохтшуда зиёд бошад,
+Posted salary recovery cannot exceed the linked deduction amount,Маблағи баргардонидани пешпардохти дар ҳисоб сабтшуда набояд аз маблағи нигоҳдории алоқаманд зиёд бошад,

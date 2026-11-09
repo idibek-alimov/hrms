@@ -23,6 +23,43 @@ class AdditionalSalary(Document):
 		self.update_return_amount_in_employee_advance()
 		self.update_employee_referral(cancel=True)
 
+	def before_submit(self):
+		if self.ref_doctype != "Employee Advance" or not self.ref_docname:
+			return
+
+		advance = frappe.get_doc("Employee Advance", self.ref_docname, for_update=True)
+		advance.check_permission("read")
+		salary_currency = frappe.db.get_value(
+			"Salary Structure Assignment",
+			{"employee": self.employee, "docstatus": 1, "from_date": ["<=", self.payroll_date]},
+			"currency",
+			order_by="from_date desc",
+		)
+		if (
+			advance.docstatus != 1
+			or advance.employee != self.employee
+			or advance.company != self.company
+			or advance.currency != self.currency
+			or salary_currency != self.currency
+			or self.type != "Deduction"
+			or self.is_recurring
+			or self.overwrite_salary_structure_amount
+			or self.disabled
+		):
+			frappe.throw(
+				_(
+					"Advance recovery requires a non-recurring deduction for the same employee, company and currency."
+				)
+			)
+
+		account = frappe.db.get_value(
+			"Salary Component Account",
+			{"parent": self.salary_component, "company": self.company},
+			"account",
+		)
+		if account != advance.advance_account:
+			frappe.throw(_("The recovery salary component must use the employee advance account."))
+
 	def validate(self):
 		validate_active_employee(self.employee)
 		self.validate_dates()
@@ -216,16 +253,8 @@ class AdditionalSalary(Document):
 
 	def update_return_amount_in_employee_advance(self):
 		if self.ref_doctype == "Employee Advance" and self.ref_docname:
-			return_amount = frappe.db.get_value("Employee Advance", self.ref_docname, "return_amount")
-
-			if self.docstatus == 2:
-				return_amount -= self.amount
-			else:
-				return_amount += self.amount
-
-			frappe.db.set_value("Employee Advance", self.ref_docname, "return_amount", return_amount)
 			advance = frappe.get_doc("Employee Advance", self.ref_docname)
-			advance.set_status(update=True)
+			advance.set_total_advance_paid()
 
 	def update_employee_referral(self, cancel=False):
 		if self.ref_doctype == "Employee Referral":
