@@ -64,6 +64,16 @@ TAX_COMPONENTS_BY_COMPANY = "tax_components_by_company"
 
 
 class SalarySlip(TransactionBase):
+	def run_before_save_methods(self):
+		# The same execution guard covers forms, imports and Payroll Entry workers.
+		from erpnext.setup.staff_commission_handoff import guard_native_slip
+
+		guard_native_slip(self)
+		result = super().run_before_save_methods()
+		# Native validation may discover inputs absent from the incoming child rows.
+		guard_native_slip(self)
+		return result
+
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 		self.default_series = f"Sal Slip/{self.employee}/.#####"
@@ -264,6 +274,9 @@ class SalarySlip(TransactionBase):
 		)
 
 	def on_trash(self):
+		from erpnext.setup.staff_commission_handoff import guard_native_slip
+
+		guard_native_slip(self)
 		from frappe.model.naming import revert_series_if_last
 
 		if not self.has_custom_naming_series:

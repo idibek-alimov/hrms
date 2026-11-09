@@ -11,6 +11,15 @@ from hrms.hr.utils import validate_active_employee
 
 
 class AdditionalSalary(Document):
+	def run_before_save_methods(self):
+		# Managed commission admission precedes native ignore_validate handling.
+		from erpnext.setup.staff_commission_handoff import guard_native_input
+
+		guard_native_input(self)
+		result = super().run_before_save_methods()
+		guard_native_input(self)
+		return result
+
 	def before_validate(self):
 		if self.payroll_date and self.is_recurring:
 			self.payroll_date = None
