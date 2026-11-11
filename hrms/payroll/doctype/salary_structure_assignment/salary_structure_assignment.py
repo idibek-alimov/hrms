@@ -15,6 +15,13 @@ class DuplicateAssignment(frappe.ValidationError):
 
 
 class SalaryStructureAssignment(Document):
+	def run_before_save_methods(self):
+		from erpnext.setup.staff_pay_actions import guard_native_change
+
+		# Managed pay history remains protected even when validations are skipped.
+		guard_native_change(self)
+		return super().run_before_save_methods()
+
 	def validate(self):
 		self.validate_dates()
 		self.validate_company()

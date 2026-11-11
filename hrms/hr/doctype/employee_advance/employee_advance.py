@@ -184,8 +184,10 @@ class EmployeeAdvance(Document):
 	def get_unposted_salary_recovery(self, entries):
 		"""Keep submitted reservations, excluding deductions already in active APLE.
 
-		Payroll creates APLE before linking the JE back onto the slips, so use the
-		JE's native Payroll Entry reference. Cash-return JEs have no such reference.
+		Payroll creates APLE before linking the JE back onto the slips. Use the
+		JE's Payroll Entry reference or the native accrual's exact in-flight slips;
+		zero-net payroll has no payable row. Later reads use the persisted slip link.
+		Cash-return JEs do not acquire salary-recovery provenance.
 		The source amount stays reserved after accrual reversal until its Additional
 		Salary is cancelled. A submitted slip alone never proves a posted recovery.
 		"""
@@ -204,19 +206,28 @@ class EmployeeAdvance(Document):
 			{row.voucher_no for row in entries if row.voucher_type == "Journal Entry" and row.amount < 0}
 		)
 		if journals:
+			from hrms.payroll.doctype.payroll_entry.payroll_entry import _accrual_slips
+
+			pending_journal, pending_slips = _accrual_slips.get()
 			rows = frappe.db.sql(
 				"""select distinct sd.name, sd.additional_salary, sd.amount
 				from `tabSalary Detail` sd
 				inner join `tabSalary Slip` ss on ss.name=sd.parent and sd.parenttype='Salary Slip'
-				inner join `tabJournal Entry Account` ja on ja.reference_type='Payroll Entry'
-					and ja.reference_name=ss.payroll_entry and ja.parenttype='Journal Entry'
-				inner join `tabJournal Entry` je on je.name=ja.parent
+				inner join `tabJournal Entry` je on je.name in %(journals)s
 				inner join `tabAdditional Salary` ads on ads.name=sd.additional_salary
 				where je.name in %(journals)s and je.docstatus=1
 					and ss.docstatus in (1, 2) and sd.parentfield='deductions'
+					and ss.employee=%(employee)s and ss.company=%(company)s
+					and ads.employee=ss.employee and ads.company=ss.company
 					and ads.ref_doctype='Employee Advance' and ads.ref_docname=%(advance)s
+					and (ss.journal_entry=je.name or exists (
+						select 1 from `tabJournal Entry Account` ja where ja.parent=je.name
+						and ja.parenttype='Journal Entry' and ja.reference_type='Payroll Entry'
+						and ja.reference_name=ss.payroll_entry)
+						or (je.name=%(pending_journal)s and ss.name in %(pending_slips)s))
 				for update""",
-				{"journals": journals, "advance": self.name},
+				{"journals": journals, "advance": self.name, "employee": self.employee, "company": self.company,
+					"pending_journal": pending_journal or "", "pending_slips": pending_slips or ("",)},
 				as_dict=True,
 			)
 			for row in rows:

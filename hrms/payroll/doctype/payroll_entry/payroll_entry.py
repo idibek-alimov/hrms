@@ -2,6 +2,7 @@
 # For license information, please see license.txt
 
 import json
+from contextvars import ContextVar
 
 from dateutil.relativedelta import relativedelta
 
@@ -30,6 +31,11 @@ from erpnext.accounts.utils import get_fiscal_year
 
 from hrms.payroll.doctype.salary_slip.salary_slip_loan_utils import if_lending_app_installed
 from hrms.payroll.doctype.salary_withholding.salary_withholding import link_bank_entry_in_salary_withholdings
+
+# Native accrual provenance during GL/APLE creation, before journal_entry is linked
+# back onto slips. Zero-net payroll has no payable row carrying a Payroll Entry ref.
+_accrual_slips = ContextVar("native_payroll_accrual_slips", default=(None, ()))
+_single_accrual = ContextVar("atomic_single_employee_accrual", default=None)
 
 
 class PayrollEntry(Document):
@@ -63,7 +69,41 @@ class PayrollEntry(Document):
 
 	def on_submit(self):
 		self.set_status(update=True, status="Submitted")
-		self.create_salary_slips()
+		if _single_accrual.get() is self:
+			from erpnext.setup.staff_statement_preparation import native_permissions
+			# The caller owns this transaction. Do not use the committing/queueing
+			# batch helpers, or send salary emails before the command is committed.
+			slip = frappe.get_doc(dict(doctype="Salary Slip", employee=self.employees[0].employee,
+				company=self.company, currency=self.currency, exchange_rate=self.exchange_rate,
+				payroll_frequency=self.payroll_frequency, start_date=self.start_date,
+				end_date=self.end_date, posting_date=self.posting_date, payroll_entry=self.name))
+			native_permissions(slip)
+			slip.insert()
+			native_permissions(slip)
+			slip.submit()
+			self.make_accrual_jv_entry([slip])
+			self.db_set(dict(salary_slips_created=1, salary_slips_submitted=1))
+		else:
+			self.create_salary_slips()
+
+	def submit_single_employee_accrual(self):
+		"""Private synchronous native lifecycle; never callable through Desk RPC.
+
+		No savepoint or transaction end here: the caller must provide atomicity,
+		idempotency, scoped field checks and reconciliation before committing.
+		"""
+		if (self.docstatus != 0 or len(self.employees) != 1 or self.payroll_frequency != "Monthly"
+			or self.salary_slip_based_on_timesheet or _single_accrual.get() is not None):
+			frappe.throw(_("Use the native batch workflow for this payroll."))
+		self.check_permission("write")
+		token = _single_accrual.set(self)
+		previous_payroll_flag = frappe.flags.via_payroll_entry
+		try:
+			frappe.flags.via_payroll_entry = True
+			return self.submit()
+		finally:
+			frappe.flags.via_payroll_entry = previous_payroll_flag
+			_single_accrual.reset(token)
 
 	def validate_existing_salary_slips(self):
 		if not self.employees:
@@ -659,11 +699,21 @@ class PayrollEntry(Document):
 		if voucher_type == "Journal Entry":
 			journal_entry.title = payroll_payable_account
 
-		journal_entry.save(ignore_permissions=True)
+		if _single_accrual.get() is self:
+			# Unlike historical batch payroll, this path never elevates the JE insert.
+			from erpnext.setup.staff_statement_preparation import native_permissions
+			native_permissions(journal_entry)
+			journal_entry.save()
+		else:
+			journal_entry.save(ignore_permissions=True)
 
 		try:
 			if submit_journal_entry:
-				journal_entry.submit()
+				token = _accrual_slips.set((journal_entry.name, tuple(s.name for s in submitted_salary_slips or [])))
+				try:
+					journal_entry.submit()
+				finally:
+					_accrual_slips.reset(token)
 
 			if submitted_salary_slips:
 				self.set_journal_entry_in_salary_slips(submitted_salary_slips, jv_name=journal_entry.name)
