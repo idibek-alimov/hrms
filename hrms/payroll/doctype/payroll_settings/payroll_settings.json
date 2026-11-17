@@ -101,7 +101,7 @@
    "label": "Show Leave Balances in Salary Slip"
   },
   {
-   "default": "0",
+   "default": "1",
    "description": "If checked, Payroll Payable will be booked against each employee",
    "fieldname": "process_payroll_accounting_entry_based_on_employee",
    "fieldtype": "Check",
@@ -178,7 +178,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-10-18 17:12:02.044020",
+ "modified": "2026-11-17 12:24:00.000000",
  "modified_by": "Administrator",
  "module": "Payroll",
  "name": "Payroll Settings",
