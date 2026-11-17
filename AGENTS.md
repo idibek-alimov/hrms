@@ -62,6 +62,15 @@ records and keep advanced detail available progressively.
 
 ## Verification and handoff
 
+- **Development stage — Zero important data & fast execution**:
+  - This project is in early development with **NO production data, customer records, or real employee/payroll data** to protect.
+  - Any records on `radolfa.localhost` can be deleted, modified, or reset at will.
+  - **Never create fresh or throwaway Frappe sites** (e.g. `_new_site`, temporary Docker sites, or custom temporary Nginx setups) for tests or verification.
+  - Apply all schema migrations directly via `bench --site radolfa.localhost migrate` (takes seconds).
+  - Run tests directly on `radolfa.localhost` using disposable/test-prefixed records or transaction savepoints.
+  - Reserve heavy multi-viewport, multi-lingual browser screenshot matrices for final integration phases, using fast focused Python and Node unit checks for intermediate development.
+- **Development stage — NO patches (`patches/` or `patches.txt`)**: Do not create migration patches in `hrms/patches/` or register entries in `hrms/patches.txt`. Apply all schema updates, custom fields, default records, and bug fixes directly in the source code.
+
 Test affected calculations, approval permissions, date boundaries, and cancellation
 paths in proportion to the change, using suitable test data. Do not use live payroll
 submission or real payments as verification. Inspect desktop/mobile views and relevant

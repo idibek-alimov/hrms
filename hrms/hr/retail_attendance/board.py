@@ -2,14 +2,20 @@
 from datetime import timedelta
 
 import frappe
+from frappe import _
 from frappe.utils import get_datetime, getdate, now_datetime
 
-from hrms.hr.retail_attendance import commands, schedules
+from hrms.hr.retail_attendance import commands, rules, schedules
 
 
-def get_board(site, start_date):
+def get_board(site, start_date, view="week"):
     doc = commands.site_doc(site)
-    start = getdate(start_date)
+    if view not in ("today", "week"):
+        frappe.throw(_("Choose Today or Week."))
+    current = frappe.get_doc("Retail Attendance Day", doc.current_day) if doc.current_day else None
+    # Today's work belongs to the still-open business day across midnight.
+    # Do not move an overtime employee into an empty new calendar-day row.
+    start = getdate(current.business_date) if view == "today" and current else getdate(start_date)
     end = start + timedelta(days=6)
     rosters = frappe.get_list("Retail Attendance Roster", filters={"site": site, "company": doc.company},
         fields=["name", "company", "site", "employee", "enrolled_from", "version"], limit_page_length=0)
@@ -18,7 +24,6 @@ def get_board(site, start_date):
         fields=["name", "business_date", "status"], limit_page_length=0)
     day_dates = {r.name: str(r.business_date) for r in days}
     day_states = {str(r.business_date): r.status for r in days}
-    current = frappe.get_doc("Retail Attendance Day", doc.current_day) if doc.current_day else None
     if current:
         day_dates[current.name] = str(current.business_date)
         day_states[str(current.business_date)] = current.status
@@ -33,6 +38,7 @@ def get_board(site, start_date):
     now = now_datetime()
     for roster in rosters:
         emp = ctx["employees"][roster.employee]
+        regular, unused_exception = rules.choose_revision([r for r in ctx["revisions"].get(roster.employee, []) if r.kind == "Regular"], max(start, getdate()))
         cells = []
         for offset in range(7):
             date = start + timedelta(days=offset)
@@ -41,20 +47,25 @@ def get_board(site, start_date):
             cells.append(dict(planned, actual=[dict(in_time=str(p.in_time), out_time=str(p.out_time) if p.out_time else None,
                 automatic=bool(p.automatic_checkout)) for p in actual], status=schedules.display_status(planned, actual, now, day_states.get(str(date)))))
         rows.append(dict(employee=roster.employee, employee_name=emp.employee_name, roster=roster.name,
-            version=roster.version, enrolled_from=str(roster.enrolled_from), cells=cells))
+            version=roster.version, enrolled_from=str(roster.enrolled_from), cells=cells,
+            regular=dict(mode=regular.mode, weekdays=regular.weekdays,
+                starts_at=str(rules.parse_time(regular.starts_at)) if regular.starts_at else None,
+                ends_at=str(rules.parse_time(regular.ends_at)) if regular.ends_at else None) if regular else None))
     rows.sort(key=lambda r: r["employee_name"].casefold())
     history = frappe.get_list("Retail Attendance Day", filters={"site": site}, fields=["name", "business_date", "status",
         "opened_at", "closed_at", "close_recorded_at", "closed_by", "difference_minutes"], order_by="business_date desc", limit_page_length=14)
     return dict(site=dict(name=doc.name, site_name=doc.site_name, company=doc.company, version=doc.version,
-        opens_at=str(doc.opens_at), closes_at=str(doc.closes_at)), start_date=str(start), today=str(getdate()),
-        server_time=str(now), current_day=_day(current), rows=rows, history=history, kiosk_available=False)
+        opens_at=str(rules.parse_time(doc.opens_at)), closes_at=str(rules.parse_time(doc.closes_at))), start_date=str(start), today=str(getdate()),
+        server_time=str(now), current_day=_day(current, employees), rows=rows, history=history, kiosk_available=False)
 
 
-def _day(doc):
+def _day(doc, employees):
     if not doc:
         return None
-    remaining = frappe.db.count("Retail Attendance Presence", {"day": doc.name, "check_out": ["is", "not set"]})
+    remaining = frappe.db.count("Retail Attendance Presence", {"day": doc.name, "employee": ["in", employees],
+        "check_out": ["is", "not set"]}) if employees else 0
     return dict(name=doc.name, business_date=str(doc.business_date), status=doc.status, version=doc.version,
         opened_at=str(doc.opened_at), expected_close=str(doc.expected_close), remaining=remaining,
         closed_at=str(doc.closed_at) if doc.closed_at else None, close_operation=doc.close_operation,
-        close_error=doc.close_error, previous_day=getdate(doc.business_date) < getdate())
+        close_error=doc.close_error, previous_day=getdate(doc.business_date) < getdate()
+            and now_datetime() > get_datetime(doc.expected_close))

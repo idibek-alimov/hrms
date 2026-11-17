@@ -18,10 +18,16 @@ def parse_time(value):
     if isinstance(value, timedelta):
         if not 0 <= value.total_seconds() < 86400:
             raise ValueError("Invalid time")
-        value = str(value)
+        value = (datetime.min + value).time()
     if isinstance(value, time):
         return value.replace(microsecond=0)
-    return time.fromisoformat(str(value)).replace(microsecond=0)
+    value = str(value)
+    if value[1:2] == ":":
+        value = "0" + value
+    result = time.fromisoformat(value).replace(microsecond=0)
+    if result.tzinfo is not None:
+        raise ValueError("Use local shop time")
+    return result
 
 
 def span(work_date, start, end):
@@ -63,15 +69,3 @@ def close_time(value, opened_at, latest_event, now):
 
 def hours_difference(expected_end, effective_close):
     return round((effective_close - expected_end).total_seconds() / 60)
-
-
-def attendance_status(schedule, presence, now, day_state=None):
-    if presence:
-        if presence.get("check_out"):
-            return "Checked out"
-        return "Overtime" if schedule.get("ends_at") and now > datetime.fromisoformat(schedule["ends_at"]) else "At work"
-    if schedule.get("state") != "Working":
-        return schedule.get("state", "Unconfigured")
-    if now > datetime.fromisoformat(schedule["ends_at"]):
-        return "No check-in"
-    return "Not arrived" if now > datetime.fromisoformat(schedule["starts_at"]) else "Expected"

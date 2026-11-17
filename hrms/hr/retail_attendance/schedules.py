@@ -23,6 +23,7 @@ def load_context(rosters, start, end):
     if not employees:
         return result
     for roster in rosters:
+        access.staff().fields("Employee", ["name", "company", "employee_name", "status", "date_of_joining", "relieving_date", "default_shift", "holiday_list"])
         result["employees"][roster.employee] = access.employee(roster.employee, roster.company)
     for dt, fields in (
         ("Retail Attendance Schedule", ["name", "employee", "roster", "kind", "effective_date", "mode", "weekdays", "starts_at", "ends_at", "revision"]),
@@ -31,7 +32,7 @@ def load_context(rosters, start, end):
         ("Shift Type", ["name", "start_time", "end_time", "enable_auto_attendance", "holiday_list"]),
     ):
         access.staff().fields(dt, fields)
-    revisions = frappe.get_list("Retail Attendance Schedule", filters={"employee": ["in", employees], "effective_date": ["<=", end]},
+    revisions = frappe.get_list("Retail Attendance Schedule", filters={"employee": ["in", employees], "effective_date": ["<=", max(end, getdate())]},
         fields=["name", "employee", "roster", "kind", "effective_date", "mode", "weekdays", "starts_at", "ends_at", "revision"], limit_page_length=0)
     assignments = frappe.get_list("Shift Assignment", filters={"employee": ["in", employees], "docstatus": 1, "status": "Active", "start_date": ["<=", end]},
         fields=["name", "employee", "shift_type", "start_date", "end_date"], limit_page_length=0)
@@ -57,6 +58,8 @@ def resolve(roster, work_date, ctx):
         return dict(output, state="Not enrolled")
     if emp.relieving_date and work_date > getdate(emp.relieving_date):
         return dict(output, state="Not employed")
+    if emp.status != "Active" and not emp.relieving_date:
+        return dict(output, state="Review")
     rev, exception = rules.choose_revision(ctx["revisions"].get(roster.employee, []), work_date)
     if not rev:
         return output

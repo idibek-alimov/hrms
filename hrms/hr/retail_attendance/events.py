@@ -19,6 +19,20 @@ _event = ContextVar("retail_attendance_native_event", default=None)
 
 @contextmanager
 def native_event(presence, log_type, timestamp):
+    from hrms.hr.retail_attendance.commands import lock_employee, site_doc
+    lock_employee(presence.employee, presence.company)
+    site = site_doc(presence.site, lock=True)
+    day = frappe.get_doc("Retail Attendance Day", presence.day, for_update=True)
+    if site.company != presence.company or day.site != site.name or day.company != site.company:
+        access.staff().deny()
+    if log_type == "IN" and (day.status != "Open" or site.current_day != day.name):
+        frappe.throw(_("The attendance day is closing or closed."))
+    if log_type == "OUT" and day.status not in ("Open", "Closing"):
+        frappe.throw(_("The attendance day is already closed."))
+    if log_type == "IN" and frappe.db.exists("Retail Attendance Presence", {
+        "employee": presence.employee, "check_out": ["is", "not set"], "name": ["!=", presence.name],
+    }):
+        frappe.throw(_("This employee is already checked in."))
     context = dict(presence=presence.name, employee=presence.employee, day=presence.day,
         log_type=log_type, time=get_datetime(timestamp), schedule=json.loads(presence.schedule))
     token = _event.set(context)
@@ -31,6 +45,12 @@ def native_event(presence, log_type, timestamp):
 def guard_native(doc, method=None):
     """Managed events stay immutable even through native CRUD/import APIs."""
     managed = doc.get("retail_attendance_presence")
+    if not frappe.get_meta("Employee Checkin").has_field("retail_attendance_presence"):
+        # Source may be mounted before the explicit schema activation phase.
+        # Preserve ordinary native checkins on such sites; never accept managed ones.
+        if managed:
+            frappe.throw(_("Attendance setup must be updated first."))
+        return
     if not doc.is_new():
         old = frappe.db.get_value("Employee Checkin", doc.name, ["retail_attendance_presence", "employee", "time"], as_dict=True)
         if old and old.retail_attendance_presence:

@@ -43,7 +43,10 @@ def continue_close(site, operation):
 @frappe.whitelist()
 def operation_status(site, request_id):
     """Lost response lookup; never re-execute a different or unknown operation."""
-    doc = commands.site_doc(site)
+    access.manager()
+    if not frappe.db.exists("Retail Attendance Site", site):
+        return dict(found=False)
+    commands.site_doc(site)
     name = frappe.db.get_value("Retail Attendance Operation", {"site": site, "request_id": request_id, "owner": frappe.session.user})
     if not name:
         return dict(found=False)
@@ -64,6 +67,23 @@ def get_context(company=None):
 
 
 @frappe.whitelist()
-def get_board(site, start_date):
+def get_board(site, start_date, view="week"):
     from hrms.hr.retail_attendance.board import get_board as load
-    return load(site, start_date)
+    return load(site, start_date, view)
+
+
+@frappe.whitelist()
+def get_schedule_history(site, roster):
+    doc = commands.site_doc(site)
+    record = frappe.get_doc("Retail Attendance Roster", roster)
+    if record.site != site or record.company != doc.company:
+        access.staff().deny()
+    access.employee(record.employee, doc.company)
+    rows = frappe.get_list("Retail Attendance Schedule", filters={"site": site, "roster": roster},
+        fields=["revision", "kind", "effective_date", "mode", "weekdays", "starts_at", "ends_at", "reason", "owner", "creation"],
+        order_by="revision desc", limit_page_length=100)
+    from hrms.hr.retail_attendance.rules import parse_time
+    for row in rows:
+        row.starts_at = str(parse_time(row.starts_at)) if row.starts_at is not None else None
+        row.ends_at = str(parse_time(row.ends_at)) if row.ends_at is not None else None
+    return rows

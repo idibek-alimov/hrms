@@ -16,6 +16,7 @@ from frappe.utils import get_datetime, getdate, now_datetime
 from hrms.hr.retail_attendance import access, rules, schedules
 
 PREFIX = "Retail Attendance "
+CLOSE_BATCH_SIZE = 20
 
 
 def _text(value, maximum=500, required=False):
@@ -29,9 +30,11 @@ def _version(value, expected):
         frappe.throw(_("This record changed. Refresh before saving."), frappe.TimestampMismatchError)
 
 
-def lock_employee(employee):
-    if not frappe.db.sql("select name from `tabEmployee` where name=%s for update", employee):
+def lock_employee(employee, company=None):
+    rows = frappe.db.sql("select name, company, status from `tabEmployee` where name=%s for update", employee, as_dict=True)
+    if not rows or (company and rows[0].company != company):
         access.staff().deny()
+    return rows[0]
 
 
 def site_doc(site, lock=False):
@@ -50,9 +53,9 @@ def _request(site, request_id, action, payload):
     digest = hashlib.sha256(json.dumps(dict(action=action, payload=payload), sort_keys=True, default=str, separators=(",", ":")).encode()).hexdigest()
     # Caller holds the site lock (or Company for creating a site). Unique request
     # key also rejects cross-site simultaneous re-use without duplicate effects.
-    name = frappe.db.get_value(PREFIX + "Operation", {"request_id": request_id})
-    if name:
-        receipt = frappe.get_doc(PREFIX + "Operation", name, for_update=True)
+    rows = frappe.db.sql("select name from `tabRetail Attendance Operation` where request_id=%s for update", request_id)
+    if rows:
+        receipt = frappe.get_doc(PREFIX + "Operation", rows[0][0], for_update=True)
         if receipt.owner != frappe.session.user or receipt.site != site.name or receipt.intent_hash != digest:
             access.staff().deny()
         return digest, receipt, json.loads(receipt.result)
@@ -69,8 +72,8 @@ def _receipt(site, request_id, digest, action, result, pending=False):
 
 def configure_site(company, site_name, opens_at, closes_at, request_id, site=None, version=None):
     access.manager(company)
-    # Creating a site requires Company write rights, not merely employee access.
-    frappe.get_doc("Company", company).check_permission("write")
+    # This writes a scoped attendance configuration, never the Company itself.
+    # Native Site create/write permission supplements manager + Company read.
     name = _text(site_name, 140, True)
     try:
         starts, ends = (str(rules.parse_time(t)) for t in (opens_at, closes_at))
@@ -90,9 +93,9 @@ def configure_site(company, site_name, opens_at, closes_at, request_id, site=Non
             frappe.throw(_("Invalid request identifier."))
         target = "attendance-" + identity
         doc = site_doc(target, lock=True) if frappe.db.exists(PREFIX + "Site", target) else frappe.get_doc(dict(
-            doctype=PREFIX + "Site", name=target, company=company, version=1))
+            doctype=PREFIX + "Site", name=target, company=company, version=1, __islocal=1))
     payload = dict(company=company, site_name=name, opens_at=starts, closes_at=ends, site=site, version=version)
-    digest, _, result = _request(doc, request_id, "Site", payload)
+    digest, existing_receipt, result = _request(doc, request_id, "Site", payload)
     if result:
         return result
     if not doc.is_new():
@@ -108,17 +111,17 @@ def configure_site(company, site_name, opens_at, closes_at, request_id, site=Non
 def enroll(site, employee, enrolled_from, request_id):
     doc = site_doc(site)
     emp = access.employee(employee, doc.company, write=True)
-    if emp.status != "Active":
-        frappe.throw(_("Select an active employee."))
     start = getdate(enrolled_from)
-    if start < getdate():
-        frappe.throw(_("Enroll from today or a future date. Historical records are preserved."))
-    lock_employee(employee)
+    current_employee = lock_employee(employee, doc.company)
     doc = site_doc(site, lock=True)
-    digest, _, result = _request(doc, request_id, "Enroll", dict(employee=employee, enrolled_from=str(start)))
+    digest, existing_receipt, result = _request(doc, request_id, "Enroll", dict(employee=employee, enrolled_from=str(start)))
     if result:
         return result
-    existing = frappe.db.get_value(PREFIX + "Roster", {"employee": employee}, ["name", "site"], as_dict=True)
+    if current_employee.status != "Active":
+        frappe.throw(_("Select an active employee."))
+    if start < getdate():
+        frappe.throw(_("Enroll from today or a future date. Historical records are preserved."))
+    existing = frappe.db.sql("select name, site from `tabRetail Attendance Roster` where employee=%s for update", employee)
     if existing:
         frappe.throw(_("This employee already has an attendance shop. Open their existing schedule."))
     roster = access.save(frappe.get_doc(dict(doctype=PREFIX + "Roster", company=doc.company, site=site,
@@ -134,9 +137,9 @@ def save_schedule(site, roster, kind, effective_date, mode, weekdays, starts_at,
     if record.site != site or record.company != doc.company:
         access.staff().deny()
     access.employee(record.employee, doc.company, write=True)
-    lock_employee(record.employee)
+    lock_employee(record.employee, doc.company)
     doc = site_doc(site, lock=True)
-    record.reload()
+    record = frappe.get_doc(PREFIX + "Roster", roster, for_update=True)
     day = getdate(effective_date)
     if kind not in ("Regular", "Exception") or mode not in (("Hours", "Native", "Off") if kind == "Regular" else ("Hours", "Off", "Usual")):
         frappe.throw(_("Choose a supported schedule change."))
@@ -150,7 +153,7 @@ def save_schedule(site, roster, kind, effective_date, mode, weekdays, starts_at,
         frappe.throw(_("Choose working days and different start and end times."))
     payload = dict(roster=roster, kind=kind, effective_date=str(day), mode=mode, weekdays=week,
         starts_at=starts, ends_at=ends, reason=note, version=version)
-    digest, _, result = _request(doc, request_id, "Schedule", payload)
+    digest, existing_receipt, result = _request(doc, request_id, "Schedule", payload)
     if result:
         return result
     _version(version, record.version)
@@ -179,7 +182,7 @@ def save_schedule(site, roster, kind, effective_date, mode, weekdays, starts_at,
 def open_day(site, business_date, version, request_id):
     doc = site_doc(site, lock=True)
     day = getdate(business_date)
-    digest, _, result = _request(doc, request_id, "Open", dict(business_date=str(day), version=version))
+    digest, existing_receipt, result = _request(doc, request_id, "Open", dict(business_date=str(day), version=version))
     if result:
         return result
     _version(version, doc.version)
@@ -213,11 +216,14 @@ def begin_close(site, day, effective_close, note, version, request_id):
     _version(version, record.version)
     if doc.current_day != day or record.status != "Open":
         frappe.throw(_("This attendance day is already closing or closed. Refresh its status."))
-    rows = frappe.get_all(PREFIX + "Presence", filters={"day": day}, fields=["employee", "in_time", "out_time"])
+    rows = frappe.db.sql("""select employee, in_time, out_time from `tabRetail Attendance Presence`
+        where day=%s for update""", day, as_dict=True)
     for row in rows:
         access.employee(row.employee, doc.company, write=True)
     if rows:
-        access.staff().fields("Employee Checkin", ["employee", "time", "log_type", "skip_auto_attendance"], "create")
+        if not frappe.has_permission("Employee Checkin", "create"):
+            access.staff().deny()
+        access.staff().fields("Employee Checkin", ["employee", "time", "log_type", "skip_auto_attendance"], "write")
     latest = max([get_datetime(r.out_time or r.in_time) for r in rows], default=None)
     try:
         effective = rules.close_time(effective_close, get_datetime(record.opened_at), latest, now_datetime())
@@ -244,14 +250,18 @@ def continue_close(site, operation):
     if receipt.site != site or receipt.action != "Close":
         access.staff().deny()
     day_name = json.loads(receipt.result)["day"]
+    # A different authorized manager may resume a close, but must have authority
+    # over the whole day's employee scope before receiving aggregate progress.
+    for name in frappe.get_all(PREFIX + "Presence", filters={"day": day_name}, pluck="employee"):
+        access.employee(name, doc.company, write=True)
     remaining = frappe.get_all(PREFIX + "Presence", filters={"day": day_name, "check_out": ["is", "not set"]},
-        fields=["name", "employee"], order_by="employee asc, name asc", limit_page_length=20)
+        fields=["name", "employee"], order_by="employee asc, name asc", limit_page_length=CLOSE_BATCH_SIZE)
     for name in sorted({p.employee for p in remaining}):
         access.employee(name, doc.company, write=True)
-        lock_employee(name)
+        lock_employee(name, doc.company)
     doc = site_doc(site, lock=True)
     day = frappe.get_doc(PREFIX + "Day", day_name, for_update=True)
-    receipt.reload()
+    receipt = frappe.get_doc(PREFIX + "Operation", operation, for_update=True)
     if day.site != site or day.close_operation != operation:
         access.staff().deny()
     if day.status == "Closed":
@@ -283,7 +293,10 @@ class CloseBlocked(Exception):
 
 
 def _finish_close(site, day, receipt):
-    count = frappe.db.count(PREFIX + "Presence", {"day": day.name, "check_out": ["is", "not set"]})
+    # Current locking read, not a repeatable-read snapshot taken before waiting
+    # for another closer. Site lock prevents new attendance writes in this day.
+    count = len(frappe.db.sql("""select name from `tabRetail Attendance Presence`
+        where day=%s and (check_out is null or check_out='') for update""", day.name))
     if count == 0:
         day.status = "Closed"
         day.version += 1

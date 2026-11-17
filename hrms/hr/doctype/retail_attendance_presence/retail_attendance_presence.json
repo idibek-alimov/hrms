@@ -58,7 +58,7 @@
    "label": "Check In",
    "fieldtype": "Link",
    "options": "Employee Checkin",
-   "reqd": 1
+   "description": "Set together with the native IN event in one attendance transaction."
   },
   {
    "fieldname": "in_time",
