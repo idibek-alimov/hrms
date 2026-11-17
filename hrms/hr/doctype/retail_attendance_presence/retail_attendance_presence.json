@@ -1,0 +1,126 @@
+{
+ "doctype": "DocType",
+ "name": "Retail Attendance Presence",
+ "module": "HR",
+ "autoname": "hash",
+ "engine": "InnoDB",
+ "track_changes": 1,
+ "allow_rename": 0,
+ "field_order": [
+  "company",
+  "site",
+  "employee",
+  "day",
+  "check_in",
+  "in_time",
+  "check_out",
+  "out_time",
+  "schedule",
+  "version",
+  "automatic_checkout",
+  "close_operation"
+ ],
+ "fields": [
+  {
+   "fieldname": "company",
+   "label": "Company",
+   "fieldtype": "Link",
+   "options": "Company",
+   "reqd": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "site",
+   "label": "Site",
+   "fieldtype": "Link",
+   "options": "Retail Attendance Site",
+   "reqd": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "employee",
+   "label": "Employee",
+   "fieldtype": "Link",
+   "options": "Employee",
+   "reqd": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "day",
+   "label": "Day",
+   "fieldtype": "Link",
+   "options": "Retail Attendance Day",
+   "reqd": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "check_in",
+   "label": "Check In",
+   "fieldtype": "Link",
+   "options": "Employee Checkin",
+   "reqd": 1
+  },
+  {
+   "fieldname": "in_time",
+   "label": "In Time",
+   "fieldtype": "Datetime",
+   "reqd": 1
+  },
+  {
+   "fieldname": "check_out",
+   "label": "Check Out",
+   "fieldtype": "Link",
+   "options": "Employee Checkin"
+  },
+  {
+   "fieldname": "out_time",
+   "label": "Out Time",
+   "fieldtype": "Datetime"
+  },
+  {
+   "fieldname": "schedule",
+   "label": "Schedule",
+   "fieldtype": "Long Text",
+   "reqd": 1
+  },
+  {
+   "fieldname": "version",
+   "label": "Version",
+   "fieldtype": "Int",
+   "default": "1"
+  },
+  {
+   "fieldname": "automatic_checkout",
+   "label": "Automatic Checkout",
+   "fieldtype": "Check"
+  },
+  {
+   "fieldname": "close_operation",
+   "label": "Close Operation",
+   "fieldtype": "Link",
+   "options": "Retail Attendance Operation"
+  }
+ ],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "create": 1,
+   "write": 1
+  },
+  {
+   "role": "Retail Manager",
+   "read": 1,
+   "create": 1,
+   "write": 1
+  },
+  {
+   "role": "Retail Owner",
+   "read": 1,
+   "create": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC"
+}

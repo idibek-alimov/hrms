@@ -20,6 +20,8 @@ def after_install():
 	set_single_defaults()
 	create_default_role_profiles()
 	run_post_install_patches()
+	from hrms.hr.retail_attendance.setup import setup as setup_retail_attendance
+	setup_retail_attendance()
 
 
 def before_uninstall():

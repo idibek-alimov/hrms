@@ -99,6 +99,7 @@ after_install = "hrms.install.after_install"
 after_migrate = [
 	"hrms.setup.update_select_perm_after_install",
 	"hrms.payroll.setup_retail_workspace.setup_home_workspace",
+	"hrms.hr.retail_attendance.setup.setup",
 ]
 
 setup_wizard_complete = "hrms.subscription_utils.update_erpnext_access"
@@ -144,6 +145,11 @@ before_app_uninstall = "hrms.setup.before_app_uninstall"
 # }
 
 has_upload_permission = {"Employee": "erpnext.setup.doctype.employee.employee.has_upload_permission"}
+
+_retail_attendance_doctypes = ["Retail Attendance " + suffix for suffix in
+	("Site", "Roster", "Schedule", "Day", "Presence", "Operation")]
+has_permission = {dt: "hrms.hr.retail_attendance.access.has_permission" for dt in _retail_attendance_doctypes}
+permission_query_conditions = {dt: "hrms.hr.retail_attendance.access.query_conditions" for dt in _retail_attendance_doctypes}
 
 # DocType Class
 # ---------------

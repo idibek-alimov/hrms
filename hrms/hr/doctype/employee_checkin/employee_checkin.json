@@ -28,9 +28,17 @@
   "offshift",
   "column_break_vyyt",
   "shift_actual_start",
-  "shift_actual_end"
+  "shift_actual_end",
+  "retail_attendance_presence",
+  "retail_attendance_day",
+  "retail_attendance_automatic",
+  "retail_attendance_operation"
  ],
  "fields": [
+  {"fieldname": "retail_attendance_presence", "label": "Retail attendance presence", "fieldtype": "Link", "options": "Retail Attendance Presence", "read_only": 1, "hidden": 1, "search_index": 1},
+  {"fieldname": "retail_attendance_day", "label": "Retail attendance day", "fieldtype": "Link", "options": "Retail Attendance Day", "read_only": 1, "hidden": 1, "search_index": 1},
+  {"fieldname": "retail_attendance_automatic", "label": "Automatic day-close checkout", "fieldtype": "Check", "read_only": 1, "hidden": 1},
+  {"fieldname": "retail_attendance_operation", "label": "Retail attendance operation", "fieldtype": "Link", "options": "Retail Attendance Operation", "read_only": 1, "hidden": 1},
   {
    "fieldname": "employee",
    "fieldtype": "Link",

@@ -24,6 +24,9 @@ class EmployeeCheckin(Document):
 		self.time = get_datetime(self.time).replace(microsecond=0)
 
 	def validate(self):
+		from hrms.hr.retail_attendance.events import guard_native
+
+		guard_native(self)
 		validate_active_employee(self.employee)
 		self.validate_duplicate_log()
 		self.validate_time_change()
@@ -62,6 +65,10 @@ class EmployeeCheckin(Document):
 
 	@frappe.whitelist()
 	def fetch_shift(self):
+		from hrms.hr.retail_attendance.events import managed_shift
+
+		if managed_shift(self):
+			return
 		if not (
 			shift_actual_timings := get_actual_start_end_datetime_of_shift(
 				self.employee, get_datetime(self.time), True
@@ -89,6 +96,13 @@ class EmployeeCheckin(Document):
 			self.shift_actual_end = shift_actual_timings.actual_end
 			self.shift_start = shift_actual_timings.start_datetime
 			self.shift_end = shift_actual_timings.end_datetime
+
+	def on_trash(self):
+		from hrms.hr.retail_attendance.events import guard_native
+		guard_native(self)
+
+	def before_rename(self, *args):
+		self.on_trash()
 
 	def validate_distance_from_shift_location(self):
 		if not frappe.db.get_single_value("HR Settings", "allow_geolocation_tracking"):

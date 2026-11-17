@@ -1,0 +1,125 @@
+{
+ "doctype": "DocType",
+ "name": "Retail Attendance Schedule",
+ "module": "HR",
+ "autoname": "hash",
+ "engine": "InnoDB",
+ "track_changes": 1,
+ "allow_rename": 0,
+ "field_order": [
+  "company",
+  "site",
+  "employee",
+  "roster",
+  "revision",
+  "kind",
+  "effective_date",
+  "mode",
+  "weekdays",
+  "starts_at",
+  "ends_at",
+  "reason"
+ ],
+ "fields": [
+  {
+   "fieldname": "company",
+   "label": "Company",
+   "fieldtype": "Link",
+   "options": "Company",
+   "reqd": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "site",
+   "label": "Site",
+   "fieldtype": "Link",
+   "options": "Retail Attendance Site",
+   "reqd": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "employee",
+   "label": "Employee",
+   "fieldtype": "Link",
+   "options": "Employee",
+   "reqd": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "roster",
+   "label": "Roster",
+   "fieldtype": "Link",
+   "options": "Retail Attendance Roster",
+   "reqd": 1
+  },
+  {
+   "fieldname": "revision",
+   "label": "Revision",
+   "fieldtype": "Int",
+   "reqd": 1
+  },
+  {
+   "fieldname": "kind",
+   "label": "Kind",
+   "fieldtype": "Select",
+   "options": "Regular\nException",
+   "reqd": 1
+  },
+  {
+   "fieldname": "effective_date",
+   "label": "Effective Date",
+   "fieldtype": "Date",
+   "reqd": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "mode",
+   "label": "Mode",
+   "fieldtype": "Select",
+   "options": "Hours\nNative\nOff\nUsual",
+   "reqd": 1
+  },
+  {
+   "fieldname": "weekdays",
+   "label": "Weekdays",
+   "fieldtype": "Data"
+  },
+  {
+   "fieldname": "starts_at",
+   "label": "Starts At",
+   "fieldtype": "Time"
+  },
+  {
+   "fieldname": "ends_at",
+   "label": "Ends At",
+   "fieldtype": "Time"
+  },
+  {
+   "fieldname": "reason",
+   "label": "Reason",
+   "fieldtype": "Small Text"
+  }
+ ],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "create": 1,
+   "write": 1
+  },
+  {
+   "role": "Retail Manager",
+   "read": 1,
+   "create": 1,
+   "write": 1
+  },
+  {
+   "role": "Retail Owner",
+   "read": 1,
+   "create": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC"
+}

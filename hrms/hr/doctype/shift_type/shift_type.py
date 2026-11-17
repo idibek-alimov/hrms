@@ -135,11 +135,15 @@ class ShiftType(Document):
 		)
 
 	def _process(self, logs):
+		from hrms.hr.retail_attendance.schedules import is_managed
+
 		group_key = lambda x: (x["employee"], x["shift_start"])  # noqa
 		for key, group in groupby(sorted(logs, key=group_key), key=group_key):
 			single_shift_logs = list(group)
 			attendance_date = key[1].date()
 			employee = key[0]
+			if is_managed(employee, attendance_date):
+				continue
 
 			if not self.should_mark_attendance(employee, attendance_date):
 				continue
@@ -285,7 +289,10 @@ class ShiftType(Document):
 		# skip dates with attendance
 		marked_attendance_dates = self.get_marked_attendance_dates_between(employee, start_date, end_date)
 
-		return sorted(set(date_range) - set(holiday_dates) - set(marked_attendance_dates))
+		from hrms.hr.retail_attendance.schedules import is_managed
+
+		return sorted(d for d in set(date_range) - set(holiday_dates) - set(marked_attendance_dates)
+			if not is_managed(employee, d))
 
 	def get_start_and_end_dates(self, employee):
 		"""Returns start and end dates for checking attendance and marking absent
@@ -386,6 +393,10 @@ class ShiftType(Document):
 		)
 		start_time = get_time(self.start_time)
 		for attendance in half_day_attendances:
+			from hrms.hr.retail_attendance.schedules import is_managed
+
+			if is_managed(employee, attendance.attendance_date):
+				continue
 			timestamp = datetime.combine(attendance.attendance_date, start_time)
 			shift_details = get_employee_shift(employee, timestamp, True)
 			if shift_details and shift_details.shift_type.name == self.name:
