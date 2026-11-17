@@ -887,3 +887,21 @@ Use attendance correction to change a managed event.,Для изменения �
 Use the Attendance page to change this record.,Измените эту запись на странице посещаемости.,
 Use the employee attendance screen for this employee.,Для этого сотрудника используйте экран посещаемости.,
 Choose Today or Week.,Выберите «Сегодня» или «Неделя».,
+A closed attendance day needs a departure no later than its closing time.,Ð”Ð»Ñ Ð·Ð°ÐºÑ€Ñ‹Ñ‚Ð¾Ð³Ð¾ Ð´Ð½Ñ Ð²Ñ€ÐµÐ¼Ñ ÑƒÑ…Ð¾Ð´Ð° Ð½Ðµ Ð¼Ð¾Ð¶ÐµÑ‚ Ð±Ñ‹Ñ‚ÑŒ Ð¿Ð¾Ð·Ð¶Ðµ Ð²Ñ€ÐµÐ¼ÐµÐ½Ð¸ Ð·Ð°ÐºÑ€Ñ‹Ñ‚Ð¸Ñ.
+A native attendance summary already exists. Review it before correcting this day.,Ð˜Ñ‚Ð¾Ð³ Ð¿Ð¾ÑÐµÑ‰Ð°ÐµÐ¼Ð¾ÑÑ‚Ð¸ Ð·Ð° ÑÑ‚Ð¾Ñ‚ Ð´ÐµÐ½ÑŒ ÑƒÐ¶Ðµ ÑÑƒÑ‰ÐµÑÑ‚Ð²ÑƒÐµÑ‚. ÐŸÑ€Ð¾Ð²ÐµÑ€ÑŒÑ‚Ðµ ÐµÐ³Ð¾ Ð¿ÐµÑ€ÐµÐ´ Ð¸ÑÐ¿Ñ€Ð°Ð²Ð»ÐµÐ½Ð¸ÐµÐ¼.
+A visit is already recorded for this day. Ask the manager to correct it.,ÐŸÑ€Ð¸Ñ…Ð¾Ð´ Ð·Ð° ÑÑ‚Ð¾Ñ‚ Ð´ÐµÐ½ÑŒ ÑƒÐ¶Ðµ Ð·Ð°Ð¿Ð¸ÑÐ°Ð½. ÐŸÐ¾Ð¿Ñ€Ð¾ÑÐ¸Ñ‚Ðµ Ñ€ÑƒÐºÐ¾Ð²Ð¾Ð´Ð¸Ñ‚ÐµÐ»Ñ Ð¸ÑÐ¿Ñ€Ð°Ð²Ð¸Ñ‚ÑŒ Ð¾Ñ‚Ð¼ÐµÑ‚ÐºÑƒ.
+Add the employee to an attendance shop first.,Ð¡Ð½Ð°Ñ‡Ð°Ð»Ð° Ð´Ð¾Ð±Ð°Ð²ÑŒÑ‚Ðµ ÑÐ¾Ñ‚Ñ€ÑƒÐ´Ð½Ð¸ÐºÐ° Ð² Ð¼Ð°Ð³Ð°Ð·Ð¸Ð½ Ð´Ð»Ñ Ð¾Ñ‚Ð¼ÐµÑ‚Ð¾Ðº.
+Attendance PIN is incorrect or unavailable.,PIN Ð½ÐµÐ²ÐµÑ€Ð½Ñ‹Ð¹ Ð¸Ð»Ð¸ Ð½ÐµÐ´Ð¾ÑÑ‚ÑƒÐ¿ÐµÐ½.
+Attendance kiosks need a setup without required GPS coordinates. Ask the administrator to review HR settings.,Ð”Ð»Ñ Ð¾Ñ‚Ð¼ÐµÑ‚ÐºÐ¸ Ð½ÑƒÐ¶Ð½Ñ‹ Ð½Ð°ÑÑ‚Ñ€Ð¾Ð¹ÐºÐ¸ Ð±ÐµÐ· Ð¾Ð±ÑÐ·Ð°Ñ‚ÐµÐ»ÑŒÐ½Ñ‹Ñ… GPS-ÐºÐ¾Ð¾Ñ€Ð´Ð¸Ð½Ð°Ñ‚. ÐŸÐ¾Ð¿Ñ€Ð¾ÑÐ¸Ñ‚Ðµ Ð°Ð´Ð¼Ð¸Ð½Ð¸ÑÑ‚Ñ€Ð°Ñ‚Ð¾Ñ€Ð° Ð¿Ñ€Ð¾Ð²ÐµÑ€Ð¸Ñ‚ÑŒ Ð½Ð°ÑÑ‚Ñ€Ð¾Ð¹ÐºÐ¸ HR.
+Attendance time cannot be before the day opened.,Ð’Ñ€ÐµÐ¼Ñ Ð¾Ñ‚Ð¼ÐµÑ‚ÐºÐ¸ Ð½Ðµ Ð¼Ð¾Ð¶ÐµÑ‚ Ð±Ñ‹Ñ‚ÑŒ Ñ€Ð°Ð½ÑŒÑˆÐµ Ð¾Ñ‚ÐºÑ€Ñ‹Ñ‚Ð¸Ñ Ð´Ð½Ñ.
+Attendance verification is unavailable. Try again later.,ÐŸÑ€Ð¾Ð²ÐµÑ€ÐºÐ° Ð¾Ñ‚Ð¼ÐµÑ‚ÐºÐ¸ ÑÐµÐ¹Ñ‡Ð°Ñ Ð½ÐµÐ´Ð¾ÑÑ‚ÑƒÐ¿Ð½Ð°. ÐŸÐ¾Ð¿Ñ€Ð¾Ð±ÑƒÐ¹Ñ‚Ðµ Ð¿Ð¾Ð·Ð¶Ðµ.
+Close the employee's other attendance visit first.,Ð¡Ð½Ð°Ñ‡Ð°Ð»Ð° Ð·Ð°ÐºÑ€Ð¾Ð¹Ñ‚Ðµ Ð´Ñ€ÑƒÐ³ÑƒÑŽ Ð¾Ñ‚ÐºÑ€Ñ‹Ñ‚ÑƒÑŽ Ð¾Ñ‚Ð¼ÐµÑ‚ÐºÑƒ ÑÐ¾Ñ‚Ñ€ÑƒÐ´Ð½Ð¸ÐºÐ°.
+Departure must be after arrival.,Ð’Ñ€ÐµÐ¼Ñ ÑƒÑ…Ð¾Ð´Ð° Ð´Ð¾Ð»Ð¶Ð½Ð¾ Ð±Ñ‹Ñ‚ÑŒ Ð¿Ð¾Ð·Ð¶Ðµ Ð²Ñ€ÐµÐ¼ÐµÐ½Ð¸ Ð¿Ñ€Ð¸Ñ…Ð¾Ð´Ð°.
+Enter an attendance PIN of 4 to 8 digits for an active employee.,Ð’Ð²ÐµÐ´Ð¸Ñ‚Ðµ PIN Ð¸Ð· 4â€“8 Ñ†Ð¸Ñ„Ñ€ Ð´Ð»Ñ Ð´ÐµÐ¹ÑÑ‚Ð²ÑƒÑŽÑ‰ÐµÐ³Ð¾ ÑÐ¾Ñ‚Ñ€ÑƒÐ´Ð½Ð¸ÐºÐ°.
+Finish closing this attendance day before correcting it.,"Ð¡Ð½Ð°Ñ‡Ð°Ð»Ð° Ð·Ð°Ð²ÐµÑ€ÑˆÐ¸Ñ‚Ðµ Ð·Ð°ÐºÑ€Ñ‹Ñ‚Ð¸Ðµ ÑÑ‚Ð¾Ð³Ð¾ Ð´Ð½Ñ, Ð·Ð°Ñ‚ÐµÐ¼ Ð¸ÑÐ¿Ñ€Ð°Ð²Ð»ÑÐ¹Ñ‚Ðµ Ð¾Ñ‚Ð¼ÐµÑ‚ÐºÑƒ."
+Multiple visits need review before correction.,ÐÐµÑÐºÐ¾Ð»ÑŒÐºÐ¾ Ð¿Ñ€Ð¸Ñ…Ð¾Ð´Ð¾Ð² Ð½ÑƒÐ¶Ð½Ð¾ Ð¿Ñ€Ð¾Ð²ÐµÑ€Ð¸Ñ‚ÑŒ Ð¿ÐµÑ€ÐµÐ´ Ð¸ÑÐ¿Ñ€Ð°Ð²Ð»ÐµÐ½Ð¸ÐµÐ¼.
+No confirmed working schedule. Ask the manager to review attendance.,ÐÐµÑ‚ Ð¿Ð¾Ð´Ñ‚Ð²ÐµÑ€Ð¶Ð´Ñ‘Ð½Ð½Ð¾Ð³Ð¾ Ñ€Ð°Ð±Ð¾Ñ‡ÐµÐ³Ð¾ Ð³Ñ€Ð°Ñ„Ð¸ÐºÐ°. ÐžÐ±Ñ€Ð°Ñ‚Ð¸Ñ‚ÐµÑÑŒ Ðº Ñ€ÑƒÐºÐ¾Ð²Ð¾Ð´Ð¸Ñ‚ÐµÐ»ÑŽ.
+No current check-in was found in this shop.,Ð’ ÑÑ‚Ð¾Ð¼ Ð¼Ð°Ð³Ð°Ð·Ð¸Ð½Ðµ Ð½Ðµ Ð½Ð°Ð¹Ð´ÐµÐ½ Ñ‚ÐµÐºÑƒÑ‰Ð¸Ð¹ Ð¿Ñ€Ð¸Ñ…Ð¾Ð´.
+Recorded departure cannot be removed. Enter its corrected time.,Ð—Ð°Ð¿Ð¸ÑÐ°Ð½Ð½Ñ‹Ð¹ ÑƒÑ…Ð¾Ð´ Ð½ÐµÐ»ÑŒÐ·Ñ ÑƒÐ´Ð°Ð»Ð¸Ñ‚ÑŒ. Ð£ÐºÐ°Ð¶Ð¸Ñ‚Ðµ Ð¸ÑÐ¿Ñ€Ð°Ð²Ð»ÐµÐ½Ð½Ð¾Ðµ Ð²Ñ€ÐµÐ¼Ñ.
+Too many attempts. Wait five minutes and try again.,Ð¡Ð»Ð¸ÑˆÐºÐ¾Ð¼ Ð¼Ð½Ð¾Ð³Ð¾ Ð¿Ð¾Ð¿Ñ‹Ñ‚Ð¾Ðº. ÐŸÐ¾Ð´Ð¾Ð¶Ð´Ð¸Ñ‚Ðµ Ð¿ÑÑ‚ÑŒ Ð¼Ð¸Ð½ÑƒÑ‚ Ð¸ Ð¿Ð¾Ð²Ñ‚Ð¾Ñ€Ð¸Ñ‚Ðµ.
+"Use arrival and departure times between day opening and now, with departure after arrival.",Ð£ÐºÐ°Ð¶Ð¸Ñ‚Ðµ Ð¿Ñ€Ð¸Ñ…Ð¾Ð´ Ð¸ ÑƒÑ…Ð¾Ð´ Ð¼ÐµÐ¶Ð´Ñƒ Ð¾Ñ‚ÐºÑ€Ñ‹Ñ‚Ð¸ÐµÐ¼ Ð´Ð½Ñ Ð¸ Ñ‚ÐµÐºÑƒÑ‰Ð¸Ð¼ Ð²Ñ€ÐµÐ¼ÐµÐ½ÐµÐ¼; ÑƒÑ…Ð¾Ð´ Ð´Ð¾Ð»Ð¶ÐµÐ½ Ð±Ñ‹Ñ‚ÑŒ Ð¿Ð¾Ð·Ð¶Ðµ Ð¿Ñ€Ð¸Ñ…Ð¾Ð´Ð°.

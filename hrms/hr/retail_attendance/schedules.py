@@ -22,21 +22,27 @@ def load_context(rosters, start, end):
     result = dict(revisions={}, assignments={}, leave={}, employees={}, holidays={}, shifts={})
     if not employees:
         return result
+    ctx = access.service_scope()
+    service = bool(ctx and len(rosters) == 1 and rosters[0].employee == ctx["employee"]
+        and rosters[0].site == ctx["site"] and rosters[0].company == ctx["company"])
+    read = frappe.get_all if service else frappe.get_list
     for roster in rosters:
-        access.staff().fields("Employee", ["name", "company", "employee_name", "status", "date_of_joining", "relieving_date", "default_shift", "holiday_list"])
-        result["employees"][roster.employee] = access.employee(roster.employee, roster.company)
+        if not service:
+            access.staff().fields("Employee", ["name", "company", "employee_name", "status", "date_of_joining", "relieving_date", "default_shift", "holiday_list"])
+        result["employees"][roster.employee] = frappe.get_doc("Employee", roster.employee) if service else access.employee(roster.employee, roster.company)
     for dt, fields in (
         ("Retail Attendance Schedule", ["name", "employee", "roster", "kind", "effective_date", "mode", "weekdays", "starts_at", "ends_at", "revision"]),
         ("Shift Assignment", ["name", "employee", "shift_type", "start_date", "end_date", "status", "docstatus"]),
         ("Leave Application", ["name", "employee", "from_date", "to_date", "status", "docstatus", "half_day", "half_day_date"]),
         ("Shift Type", ["name", "start_time", "end_time", "enable_auto_attendance", "holiday_list"]),
     ):
-        access.staff().fields(dt, fields)
-    revisions = frappe.get_list("Retail Attendance Schedule", filters={"employee": ["in", employees], "effective_date": ["<=", max(end, getdate())]},
+        if not service:
+            access.staff().fields(dt, fields)
+    revisions = read("Retail Attendance Schedule", filters={"employee": ["in", employees], "effective_date": ["<=", max(end, getdate())]},
         fields=["name", "employee", "roster", "kind", "effective_date", "mode", "weekdays", "starts_at", "ends_at", "revision"], limit_page_length=0)
-    assignments = frappe.get_list("Shift Assignment", filters={"employee": ["in", employees], "docstatus": 1, "status": "Active", "start_date": ["<=", end]},
+    assignments = read("Shift Assignment", filters={"employee": ["in", employees], "docstatus": 1, "status": "Active", "start_date": ["<=", end]},
         fields=["name", "employee", "shift_type", "start_date", "end_date"], limit_page_length=0)
-    leaves = frappe.get_list("Leave Application", filters={"employee": ["in", employees], "docstatus": 1, "status": "Approved", "from_date": ["<=", end], "to_date": [">=", start]},
+    leaves = read("Leave Application", filters={"employee": ["in", employees], "docstatus": 1, "status": "Approved", "from_date": ["<=", end], "to_date": [">=", start]},
         fields=["name", "employee", "from_date", "to_date", "half_day", "half_day_date"], limit_page_length=0)
     for key, rows in (("revisions", revisions), ("assignments", assignments), ("leave", leaves)):
         for row in rows:
@@ -44,7 +50,8 @@ def load_context(rosters, start, end):
     shift_names = {r.shift_type for r in assignments} | {e.get("default_shift") for e in result["employees"].values()}
     for name in shift_names - {None, ""}:
         doc = frappe.get_doc("Shift Type", name)
-        doc.check_permission("read")
+        if not service:
+            doc.check_permission("read")
         result["shifts"][name] = doc
     return result
 

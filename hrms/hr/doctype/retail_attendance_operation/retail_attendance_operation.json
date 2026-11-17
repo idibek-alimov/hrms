@@ -13,7 +13,10 @@
   "intent_hash",
   "action",
   "status",
-  "result"
+  "result",
+  "employee",
+  "device",
+  "credential_version"
  ],
  "fields": [
   {
@@ -49,7 +52,7 @@
    "fieldname": "action",
    "label": "Action",
    "fieldtype": "Select",
-   "options": "Site\nEnroll\nSchedule\nOpen\nClose",
+   "options": "Site\nEnroll\nSchedule\nOpen\nClose\nPIN\nDevice\nRevoke\nIN\nOUT\nCorrection",
    "reqd": 1
   },
   {
@@ -64,6 +67,23 @@
    "label": "Result",
    "fieldtype": "Long Text",
    "reqd": 1
+  },
+  {
+   "fieldname": "employee",
+   "label": "employee",
+   "fieldtype": "Link",
+   "options": "Employee"
+  },
+  {
+   "fieldname": "device",
+   "label": "device",
+   "fieldtype": "Link",
+   "options": "Retail Attendance Device"
+  },
+  {
+   "fieldname": "credential_version",
+   "label": "credential version",
+   "fieldtype": "Int"
   }
  ],
  "permissions": [

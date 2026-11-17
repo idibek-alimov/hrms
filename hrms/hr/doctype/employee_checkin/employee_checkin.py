@@ -20,6 +20,12 @@ class CheckinRadiusExceededError(frappe.ValidationError):
 
 
 class EmployeeCheckin(Document):
+	def check_permission(self, permtype="read", permlevel=None):
+		from hrms.hr.retail_attendance.access import exact_permission
+		if exact_permission(self, permtype):
+			return
+		return super().check_permission(permtype, permlevel)
+
 	def before_validate(self):
 		self.time = get_datetime(self.time).replace(microsecond=0)
 

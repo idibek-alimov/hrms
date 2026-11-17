@@ -1,4 +1,4 @@
-"""Native P2 invariants. Run only on the isolated attendance-p2-test site.
+"""Native attendance invariants on the active development site.
 
 No production/site enrollment, financial fixtures, PINs or POS transactions.
 """
@@ -19,8 +19,8 @@ from hrms.hr.retail_attendance import access, api, board, commands, events, rule
 class TestRetailAttendanceP2(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        if frappe.local.site != "attendance-p2-test.localhost":
-            raise unittest.SkipTest("Requires the separate attendance-p2-test.localhost site")
+        if frappe.local.site != "radolfa.localhost":
+            raise unittest.SkipTest("Requires the radolfa.localhost development site")
         frappe.set_user("Administrator")
         if not frappe.db.exists("Gender", "Male"):
             frappe.get_doc(dict(doctype="Gender", gender="Male")).insert()
@@ -87,8 +87,12 @@ class TestRetailAttendanceP2(unittest.TestCase):
 
     def close(self, day, effective=None, request_id=None):
         effective = effective or self.clock + timedelta(hours=10)
+        # Retries must reuse the original request's version; first use reads the live one.
+        versions = self.__dict__.setdefault("close_versions", {})
+        versions.setdefault(day, frappe.db.get_value("Retail Attendance Day", day, "version"))
         with patch.object(commands, "now_datetime", return_value=self.clock + timedelta(hours=20)):
-            return commands.begin_close(self.site, day, str(effective), "Fixture close", 1, request_id or str(uuid4()))
+            return commands.begin_close(self.site, day, str(effective), "Fixture close",
+                versions[day], request_id or str(uuid4()))
 
     def test_individual_exception_does_not_change_colleagues(self):
         a, b = [self.enroll(e) for e in self.employees]
@@ -270,10 +274,11 @@ class TestRetailAttendanceP2(unittest.TestCase):
         # Only disposable test-site fixtures are committed for separate real DB
         # sessions. No threads share a Frappe connection or fake an SQL lock.
         frappe.db.commit()
+        current_site = frappe.local.site
         gate = threading.Barrier(len(jobs))
         results, errors = [], []
         def run(job):
-            frappe.init(site="attendance-p2-test.localhost")
+            frappe.init(site=current_site)
             frappe.connect()
             frappe.set_user("Administrator")
             frappe.flags.in_test = True

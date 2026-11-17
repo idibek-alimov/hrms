@@ -7,6 +7,49 @@ from frappe import _
 from frappe.model.document import Document
 
 _writing = ContextVar("retail_attendance_writer", default=False)
+_service = ContextVar("retail_attendance_service", default=None)
+_document = ContextVar("retail_attendance_exact_document", default=None)
+
+
+@contextmanager
+def kiosk_scope(device, employee, day):
+    """Private capability after current device + PIN checks, never a Desk role."""
+    token = _service.set(dict(site=device.site, company=device.company, device=device.name,
+        employee=employee, day=day))
+    try:
+        yield
+    finally:
+        _service.reset(token)
+
+
+def service_scope():
+    return _service.get()
+
+
+def exact_permission(doc, ptype):
+    return ptype in ("create", "write") and _document.get() is doc
+
+
+def service_save(doc):
+    ctx = _service.get()
+    if not ctx or doc.doctype not in ("Retail Attendance Presence", "Retail Attendance Operation", "Employee Checkin"):
+        staff().deny()
+    if doc.doctype == "Employee Checkin":
+        from hrms.hr.retail_attendance.events import event_matches
+        if not event_matches(doc):
+            staff().deny()
+        # Native `time` is permlevel 1, so Frappe would otherwise reset it to Now
+        # for the PIN-authenticated service. This exact new document was matched to
+        # the locked presence/day/time context above; no other record is affected.
+        doc.flags.ignore_permissions = True
+    elif doc.site != ctx["site"] or doc.company != ctx["company"] or doc.employee != ctx["employee"]:
+        staff().deny()
+    token = _document.set(doc)
+    try:
+        with writing():
+            return doc.insert() if doc.is_new() else doc.save()
+    finally:
+        _document.reset(token)
 
 
 def staff():
@@ -40,15 +83,21 @@ def save(doc, set_name=None):
 
 
 class ManagedRecord(Document):
+    def check_permission(self, permtype="read", permlevel=None):
+        if exact_permission(self, permtype):
+            return
+        return super().check_permission(permtype, permlevel)
+
     def run_before_save_methods(self):
         if not _writing.get():
             frappe.throw(_("Use the Attendance page to change this record."), frappe.PermissionError)
-        manager(self.company)
-        if self.get("employee"):
-            employee(self.employee, self.company, write=True)
+        if not exact_permission(self, "write"):
+            manager(self.company)
+            if self.get("employee"):
+                employee(self.employee, self.company, write=True)
         if not self.is_new():
             old = frappe.get_doc(self.doctype, self.name)
-            if self.doctype in ("Retail Attendance Schedule",) or any(
+            if self.doctype in ("Retail Attendance Schedule", "Retail Attendance Correction") or any(
                 old.get(f) != self.get(f) for f in ("company", "employee", "site", "roster")
             ):
                 frappe.throw(_("Attendance history and its scope cannot be reassigned."))

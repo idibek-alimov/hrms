@@ -1,4 +1,4 @@
-"""Narrow manager API. All financial and kiosk actions belong to later phases."""
+"""Scoped manager commands and separate capability-checked kiosk transport."""
 import frappe
 
 from hrms.hr.retail_attendance import access, commands, schedules
@@ -87,3 +87,81 @@ def get_schedule_history(site, roster):
         row.starts_at = str(parse_time(row.starts_at)) if row.starts_at is not None else None
         row.ends_at = str(parse_time(row.ends_at)) if row.ends_at is not None else None
     return rows
+
+
+@frappe.whitelist(methods=["POST"])
+def provision_device(site, device_name, request_id):
+    from hrms.hr.retail_attendance.credentials import provision
+    with access.staff().atomic():
+        return provision(site, device_name, request_id)
+
+
+@frappe.whitelist()
+def get_devices(site):
+    commands.site_doc(site)
+    return frappe.get_list("Retail Attendance Device", filters={"site": site},
+        fields=["name", "device_name", "enabled", "paired", "expires_at", "version"], limit_page_length=100)
+
+
+@frappe.whitelist(methods=["POST"])
+def revoke_device(site, device, version, request_id):
+    from hrms.hr.retail_attendance.credentials import revoke_device as revoke
+    with access.staff().atomic():
+        return revoke(site, device, version, request_id)
+
+
+@frappe.whitelist(methods=["POST"])
+def correct_presence(site, day, employee, in_time, reason, version, request_id, out_time=None):
+    from hrms.hr.retail_attendance.corrections import correct
+    with access.staff().atomic():
+        return correct(site, day, employee, in_time, out_time, reason, version, request_id)
+
+
+@frappe.whitelist()
+def get_presence_history(site, day, employee):
+    doc = commands.site_doc(site)
+    access.employee(employee, doc.company)
+    record = frappe.get_doc("Retail Attendance Day", day)
+    if record.site != site:
+        access.staff().deny()
+    return frappe.get_list("Retail Attendance Correction", filters={"site": site, "day": day, "employee": employee},
+        fields=["reason", "before_state", "after_state", "owner", "creation"], order_by="creation desc", limit_page_length=100)
+
+
+def _kiosk_guard():
+    from hrms.hr.retail_attendance.credentials import transport, guard_rate
+    transport()
+    guard_rate("transport", getattr(frappe.local, "request_ip", "unknown"), 300)
+    frappe.local.response["headers"] = {"Cache-Control": "no-store"}
+
+
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+def pair_device(pairing_code):
+    from hrms.hr.retail_attendance.credentials import pair
+    _kiosk_guard()
+    frappe.form_dict.pop("pairing_code", None)
+    with access.staff().atomic():
+        return pair(pairing_code)
+
+
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+def kiosk_context():
+    from hrms.hr.retail_attendance.presence import kiosk_context as context
+    _kiosk_guard()
+    return context()
+
+
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+def kiosk_action(employee, pin, action, request_id, day):
+    from hrms.hr.retail_attendance.presence import kiosk_action as action_command
+    _kiosk_guard()
+    frappe.form_dict.pop("pin", None)
+    with access.staff().atomic():
+        return action_command(employee, pin, action, request_id, day)
+
+
+@frappe.whitelist(allow_guest=True, methods=["POST"])
+def kiosk_result(request_id):
+    from hrms.hr.retail_attendance.presence import kiosk_result as result
+    _kiosk_guard()
+    return result(request_id)

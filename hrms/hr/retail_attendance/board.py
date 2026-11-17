@@ -29,7 +29,7 @@ def get_board(site, start_date, view="week"):
         day_states[str(current.business_date)] = current.status
     employees = list(ctx["employees"])
     presences = frappe.get_list("Retail Attendance Presence", filters={"site": site, "employee": ["in", employees], "day": ["in", list(day_dates)]},
-        fields=["name", "employee", "day", "check_in", "check_out", "in_time", "out_time", "automatic_checkout", "schedule"],
+        fields=["name", "employee", "day", "check_in", "check_out", "in_time", "out_time", "automatic_checkout", "schedule", "version"],
         limit_page_length=0) if employees and day_dates else []
     by_employee_date = {}
     for p in presences:
@@ -44,7 +44,7 @@ def get_board(site, start_date, view="week"):
             date = start + timedelta(days=offset)
             planned = schedules.resolve(roster, date, ctx)
             actual = sorted(by_employee_date.get((roster.employee, str(date)), []), key=lambda p: get_datetime(p.in_time))
-            cells.append(dict(planned, actual=[dict(in_time=str(p.in_time), out_time=str(p.out_time) if p.out_time else None,
+            cells.append(dict(planned, day=next((n for n, value in day_dates.items() if value == str(date)), None), actual=[dict(name=p.name, version=p.version, in_time=str(p.in_time), out_time=str(p.out_time) if p.out_time else None,
                 automatic=bool(p.automatic_checkout)) for p in actual], status=schedules.display_status(planned, actual, now, day_states.get(str(date)))))
         rows.append(dict(employee=roster.employee, employee_name=emp.employee_name, roster=roster.name,
             version=roster.version, enrolled_from=str(roster.enrolled_from), cells=cells,
@@ -56,7 +56,7 @@ def get_board(site, start_date, view="week"):
         "opened_at", "closed_at", "close_recorded_at", "closed_by", "difference_minutes"], order_by="business_date desc", limit_page_length=14)
     return dict(site=dict(name=doc.name, site_name=doc.site_name, company=doc.company, version=doc.version,
         opens_at=str(rules.parse_time(doc.opens_at)), closes_at=str(rules.parse_time(doc.closes_at))), start_date=str(start), today=str(getdate()),
-        server_time=str(now), current_day=_day(current, employees), rows=rows, history=history, kiosk_available=False)
+        server_time=str(now), current_day=_day(current, employees), rows=rows, history=history, kiosk_available=True)
 
 
 def _day(doc, employees):

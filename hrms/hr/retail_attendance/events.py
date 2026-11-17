@@ -15,6 +15,25 @@ from frappe.utils import get_datetime
 from hrms.hr.retail_attendance import access, schedules
 
 _event = ContextVar("retail_attendance_native_event", default=None)
+_correcting = ContextVar("retail_attendance_correction", default=False)
+
+
+@contextmanager
+def correction_context():
+    token = _correcting.set(True)
+    try:
+        yield
+    finally:
+        _correcting.reset(token)
+
+
+def event_matches(doc):
+    ctx = _event.get()
+    # Called before insert(), when native has not yet marked the document local.
+    return bool(ctx and not doc.get("name") and doc.employee == ctx["employee"]
+        and doc.get("retail_attendance_presence") == ctx["presence"]
+        and doc.get("retail_attendance_day") == ctx["day"]
+        and doc.log_type == ctx["log_type"] and get_datetime(doc.time) == ctx["time"])
 
 
 @contextmanager
@@ -25,9 +44,9 @@ def native_event(presence, log_type, timestamp):
     day = frappe.get_doc("Retail Attendance Day", presence.day, for_update=True)
     if site.company != presence.company or day.site != site.name or day.company != site.company:
         access.staff().deny()
-    if log_type == "IN" and (day.status != "Open" or site.current_day != day.name):
+    if not _correcting.get() and log_type == "IN" and (day.status != "Open" or site.current_day != day.name):
         frappe.throw(_("The attendance day is closing or closed."))
-    if log_type == "OUT" and day.status not in ("Open", "Closing"):
+    if not _correcting.get() and log_type == "OUT" and day.status not in ("Open", "Closing"):
         frappe.throw(_("The attendance day is already closed."))
     if log_type == "IN" and frappe.db.exists("Retail Attendance Presence", {
         "employee": presence.employee, "check_out": ["is", "not set"], "name": ["!=", presence.name],
@@ -63,7 +82,7 @@ def guard_native(doc, method=None):
         if not ctx or any((managed != ctx["presence"], doc.employee != ctx["employee"],
             doc.log_type != ctx["log_type"], timestamp != ctx["time"], doc.get("retail_attendance_day") != ctx["day"])):
             frappe.throw(_("Managed check-ins require an attendance operation."), frappe.PermissionError)
-        if doc.log_type == "IN":
+        if doc.log_type == "IN" and not _correcting.get():
             day = frappe.get_doc("Retail Attendance Day", ctx["day"])
             if day.status != "Open":
                 frappe.throw(_("The attendance day is closing or closed."))

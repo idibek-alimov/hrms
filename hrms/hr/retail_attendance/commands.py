@@ -39,6 +39,9 @@ def lock_employee(employee, company=None):
 
 def site_doc(site, lock=False):
     doc = frappe.get_doc(PREFIX + "Site", site, for_update=lock)
+    ctx = access.service_scope()
+    if ctx and ctx["site"] == doc.name and ctx["company"] == doc.company:
+        return doc
     access.manager(doc.company)
     doc.check_permission("read")
     return doc

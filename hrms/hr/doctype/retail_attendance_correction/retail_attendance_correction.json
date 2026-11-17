@@ -1,0 +1,100 @@
+{
+ "doctype": "DocType",
+ "name": "Retail Attendance Correction",
+ "module": "HR",
+ "autoname": "hash",
+ "engine": "InnoDB",
+ "track_changes": 1,
+ "allow_rename": 0,
+ "field_order": [
+  "company",
+  "site",
+  "employee",
+  "day",
+  "presence",
+  "operation",
+  "reason",
+  "before_state",
+  "after_state"
+ ],
+ "fields": [
+  {
+   "fieldname": "company",
+   "label": "company",
+   "fieldtype": "Link",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "fieldname": "site",
+   "label": "site",
+   "fieldtype": "Link",
+   "options": "Retail Attendance Site",
+   "reqd": 1
+  },
+  {
+   "fieldname": "employee",
+   "label": "employee",
+   "fieldtype": "Link",
+   "options": "Employee",
+   "reqd": 1
+  },
+  {
+   "fieldname": "day",
+   "label": "day",
+   "fieldtype": "Link",
+   "options": "Retail Attendance Day",
+   "reqd": 1
+  },
+  {
+   "fieldname": "presence",
+   "label": "presence",
+   "fieldtype": "Link",
+   "options": "Retail Attendance Presence"
+  },
+  {
+   "fieldname": "operation",
+   "label": "operation",
+   "fieldtype": "Link",
+   "options": "Retail Attendance Operation"
+  },
+  {
+   "fieldname": "reason",
+   "label": "reason",
+   "fieldtype": "Small Text",
+   "reqd": 1
+  },
+  {
+   "fieldname": "before_state",
+   "label": "before state",
+   "fieldtype": "Long Text"
+  },
+  {
+   "fieldname": "after_state",
+   "label": "after state",
+   "fieldtype": "Long Text"
+  }
+ ],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "create": 1,
+   "write": 1
+  },
+  {
+   "role": "Retail Manager",
+   "read": 1,
+   "create": 1,
+   "write": 1
+  },
+  {
+   "role": "Retail Owner",
+   "read": 1,
+   "create": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC"
+}
