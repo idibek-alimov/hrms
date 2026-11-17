@@ -68,4 +68,16 @@ Absence fine,Ҷарима барои набудан
 "Missed shift ({0} - {1})","Навбати корӣ иҷро нашуд ({0} - {1})"
 Missed shift (no absence fine configured),Навбати корӣ иҷро нашуд (ҷарима таъин нашудааст)
 Not scheduled to work.,Дар график пешбинӣ нашудааст.
-Shift in progress.,Навбати корӣ давом дорад.
+Shift in progress.,Навбати корӣ давом дорад.Enforce Attendance for Sales Persons,Талаб кардани қайди ҳозирӣ барои фурӯшандагон
+Attendance Site,Мағозаи ҳозирӣ
+Attendance Site is required when attendance enforcement is enabled.,Мағозаи ҳозирии кормандон ҳатмист, агар тафтиши ҳозирӣ фаъол бошад.
+"The selected Attendance Site belongs to {0}, not {1}.","Мағозаи ҳозирии интихобшуда ба ширкати {0} тааллуқ дорад, на {1}."
+"Sales Person {0} is disabled.","Фурӯшанда {0} ғайрифаъол аст."
+"Sales Person {0} is not linked to an Employee.","Фурӯшанда {0} ба корманд пайваст карда нашудааст."
+"Employee {0} is not active in company {1}.","Корманд {0} дар ширкати {1} фаъол нест."
+"Employee {0} is not enrolled in the attendance roster for this shop.","Корманд {0} ба ҷадвали ҳозирии ин мағоза дохил карда нашудааст."
+The attendance day for this shop is not open.,Рӯзи кории ҳозирӣ барои ин мағоза кушода нест.
+"Employee {0} has not checked in today.","Корманд {0} имрӯз омаданашро қайд накардааст."
+"Employee {0} has already checked out.","Корманд {0} аллакай рафтанашро қайд кардааст."
+"Sales Person {0} conflicts with sales team: {1}.","Фурӯшанда {0} бо рӯйхати фурӯшандагон мухолифат дорад: {1}."
+"Sales Person {0} is not permitted for this POS profile.","Фурӯшанда {0} барои ин POS-профил иҷозат дода нашудааст."

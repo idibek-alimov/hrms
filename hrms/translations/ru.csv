@@ -920,4 +920,16 @@ Absence fine,Штраф за отсутствие
 "Missed shift ({0} - {1})","Пропуск смены ({0} - {1})"
 Missed shift (no absence fine configured),Пропуск смены (штраф за отсутствие не настроен)
 Not scheduled to work.,Не запланирован по графику.
-Shift in progress.,Смена продолжается.
+Shift in progress.,Смена продолжается.Enforce Attendance for Sales Persons,Требовать отметку посещаемости для продавцов
+Attendance Site,Магазин посещаемости
+Attendance Site is required when attendance enforcement is enabled.,Магазин посещаемости обязателен, если включена проверка посещаемости.
+"The selected Attendance Site belongs to {0}, not {1}.","Выбранный магазин посещаемости принадлежит компании {0}, а не {1}."
+"Sales Person {0} is disabled.","Продавец {0} отключен."
+"Sales Person {0} is not linked to an Employee.","Продавец {0} не привязан к сотруднику."
+"Employee {0} is not active in company {1}.","Сотрудник {0} не активен в компании {1}."
+"Employee {0} is not enrolled in the attendance roster for this shop.","Сотрудник {0} не включен в график посещаемости этого магазина."
+The attendance day for this shop is not open.,Рабочий день посещаемости для этого магазина не открыт.
+"Employee {0} has not checked in today.","Сотрудник {0} сегодня не отметился о приходе."
+"Employee {0} has already checked out.","Сотрудник {0} уже отметился об уходе."
+"Sales Person {0} conflicts with sales team: {1}.","Продавец {0} конфликтует со списком продавцов: {1}."
+"Sales Person {0} is not permitted for this POS profile.","Продавец {0} не разрешен для этого POS-профиля."
