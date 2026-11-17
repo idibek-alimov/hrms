@@ -68,7 +68,8 @@ Absence fine,Ҷарима барои набудан
 "Missed shift ({0} - {1})","Навбати корӣ иҷро нашуд ({0} - {1})"
 Missed shift (no absence fine configured),Навбати корӣ иҷро нашуд (ҷарима таъин нашудааст)
 Not scheduled to work.,Дар график пешбинӣ нашудааст.
-Shift in progress.,Навбати корӣ давом дорад.Enforce Attendance for Sales Persons,Талаб кардани қайди ҳозирӣ барои фурӯшандагон
+Shift in progress.,Навбати корӣ давом дорад.
+Enforce Attendance for Sales Persons,Талаб кардани қайди ҳозирӣ барои фурӯшандагон
 Attendance Site,Мағозаи ҳозирӣ
 Attendance Site is required when attendance enforcement is enabled.,Мағозаи ҳозирии кормандон ҳатмист, агар тафтиши ҳозирӣ фаъол бошад.
 "The selected Attendance Site belongs to {0}, not {1}.","Мағозаи ҳозирии интихобшуда ба ширкати {0} тааллуқ дорад, на {1}."

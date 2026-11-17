@@ -920,7 +920,8 @@ Absence fine,Штраф за отсутствие
 "Missed shift ({0} - {1})","Пропуск смены ({0} - {1})"
 Missed shift (no absence fine configured),Пропуск смены (штраф за отсутствие не настроен)
 Not scheduled to work.,Не запланирован по графику.
-Shift in progress.,Смена продолжается.Enforce Attendance for Sales Persons,Требовать отметку посещаемости для продавцов
+Shift in progress.,Смена продолжается.
+Enforce Attendance for Sales Persons,Требовать отметку посещаемости для продавцов
 Attendance Site,Магазин посещаемости
 Attendance Site is required when attendance enforcement is enabled.,Магазин посещаемости обязателен, если включена проверка посещаемости.
 "The selected Attendance Site belongs to {0}, not {1}.","Выбранный магазин посещаемости принадлежит компании {0}, а не {1}."
