@@ -139,13 +139,27 @@ def save_fine_rule(site, effective_date, enabled, absence_amount, late_brackets,
 def get_fine_rule(site, work_date=None):
     from hrms.hr.retail_attendance.fines import get_effective_rule
     commands.site_doc(site)
-    return get_effective_rule(site, work_date)
+    if work_date:
+        return get_effective_rule(site, work_date)
+    # Include a scheduled revision in the editor so saving a future rule does not
+    # leave the manager looking at an older rule or a stale revision counter.
+    latest = frappe.get_all("Retail Attendance Fine Rule", filters={"site": site},
+        fields=["effective_date", "revision"], order_by="revision desc", limit_page_length=1)
+    if not latest:
+        return None
+    rule = get_effective_rule(site, latest[0].effective_date)
+    rule["latest_revision"] = latest[0].revision
+    return rule
 
 
 @frappe.whitelist()
 def get_fine_history(site, employee=None, month=None):
     doc = commands.site_doc(site)
     filters = {"site": site}
+    allowed_employees = access.staff().rows("Employee", ["name"], filters={"company": doc.company})
+    if not allowed_employees:
+        return []
+    filters["employee"] = ["in", [r.name for r in allowed_employees]]
     if employee:
         access.employee(employee, doc.company)
         filters["employee"] = employee

@@ -1,0 +1,91 @@
+{
+ "doctype": "DocType",
+ "name": "Retail Attendance Shop Schedule",
+ "module": "HR",
+ "autoname": "hash",
+ "engine": "InnoDB",
+ "track_changes": 1,
+ "allow_rename": 0,
+ "field_order": [
+  "company",
+  "site",
+  "effective_date",
+  "weekdays",
+  "starts_at",
+  "ends_at",
+  "revision",
+  "reason"
+ ],
+ "fields": [
+  {
+   "fieldname": "company",
+   "label": "Company",
+   "fieldtype": "Link",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "fieldname": "site",
+   "label": "Site",
+   "fieldtype": "Link",
+   "options": "Retail Attendance Site",
+   "reqd": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "effective_date",
+   "label": "Effective Date",
+   "fieldtype": "Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "weekdays",
+   "label": "Working Days",
+   "fieldtype": "Data",
+   "reqd": 1
+  },
+  {
+   "fieldname": "starts_at",
+   "label": "Starts At",
+   "fieldtype": "Time",
+   "reqd": 1
+  },
+  {
+   "fieldname": "ends_at",
+   "label": "Ends At",
+   "fieldtype": "Time",
+   "reqd": 1
+  },
+  {
+   "fieldname": "revision",
+   "label": "Revision",
+   "fieldtype": "Int",
+   "reqd": 1
+  },
+  {
+   "fieldname": "reason",
+   "label": "Reason",
+   "fieldtype": "Small Text"
+  }
+ ],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "create": 1,
+   "write": 1
+  },
+  {
+   "role": "Retail Manager",
+   "read": 1,
+   "create": 1,
+   "write": 1
+  },
+  {
+   "role": "Retail Owner",
+   "read": 1,
+   "create": 1,
+   "write": 1
+  }
+ ]
+}

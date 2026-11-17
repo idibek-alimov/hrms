@@ -26,6 +26,7 @@ app_include_js = [
 	"hrms.bundle.js",
 ]
 app_include_css = "hrms.bundle.css"
+before_request = ["hrms.hr.retail_attendance.screen.guard_request"]
 
 # website
 
@@ -147,7 +148,7 @@ before_app_uninstall = "hrms.setup.before_app_uninstall"
 has_upload_permission = {"Employee": "erpnext.setup.doctype.employee.employee.has_upload_permission"}
 
 _retail_attendance_doctypes = ["Retail Attendance " + suffix for suffix in
-	("Site", "Roster", "Schedule", "Day", "Presence", "Operation", "Credential", "Device", "Correction", "Fine Rule", "Fine Decision")]
+	("Site", "Roster", "Schedule", "Shop Schedule", "Day", "Presence", "Operation", "Credential", "Device", "Correction", "Fine Rule", "Fine Decision")]
 has_permission = {dt: "hrms.hr.retail_attendance.access.has_permission" for dt in _retail_attendance_doctypes}
 permission_query_conditions = {dt: "hrms.hr.retail_attendance.access.query_conditions" for dt in _retail_attendance_doctypes}
 

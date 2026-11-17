@@ -97,7 +97,7 @@ class ManagedRecord(Document):
                 employee(self.employee, self.company, write=True)
         if not self.is_new():
             old = frappe.get_doc(self.doctype, self.name)
-            if self.doctype in ("Retail Attendance Schedule", "Retail Attendance Correction") or any(
+            if self.doctype in ("Retail Attendance Schedule", "Retail Attendance Shop Schedule", "Retail Attendance Correction") or any(
                 old.get(f) != self.get(f) for f in ("company", "employee", "site", "roster")
             ):
                 frappe.throw(_("Attendance history and its scope cannot be reassigned."))

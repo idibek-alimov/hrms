@@ -1,0 +1,45 @@
+{
+ "doctype": "DocType",
+ "name": "Retail Attendance Screen",
+ "module": "HR",
+ "autoname": "hash",
+ "engine": "InnoDB",
+ "track_changes": 0,
+ "allow_rename": 0,
+ "field_order": [
+  "manager",
+  "company",
+  "site",
+  "locked"
+ ],
+ "fields": [
+  {
+   "fieldname": "manager",
+   "label": "Manager",
+   "fieldtype": "Link",
+   "options": "User",
+   "reqd": 1
+  },
+  {
+   "fieldname": "company",
+   "label": "Company",
+   "fieldtype": "Link",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "fieldname": "site",
+   "label": "Site",
+   "fieldtype": "Link",
+   "options": "Retail Attendance Site",
+   "reqd": 1
+  },
+  {
+   "fieldname": "locked",
+   "label": "Locked",
+   "fieldtype": "Check",
+   "default": "1"
+  }
+ ],
+ "permissions": []
+}

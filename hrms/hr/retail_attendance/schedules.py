@@ -19,13 +19,16 @@ def is_managed(employee, work_date):
 
 def load_context(rosters, start, end):
     employees = [r.employee for r in rosters]
-    result = dict(revisions={}, assignments={}, leave={}, employees={}, holidays={}, shifts={})
+    result = dict(revisions={}, assignments={}, leave={}, employees={}, holidays={}, shifts={}, shop_schedules={})
     if not employees:
         return result
     ctx = access.service_scope()
     service = bool(ctx and len(rosters) == 1 and rosters[0].employee == ctx["employee"]
         and rosters[0].site == ctx["site"] and rosters[0].company == ctx["company"])
     read = frappe.get_all if service else frappe.get_list
+    for row in read("Retail Attendance Shop Schedule", filters={"site": ["in", list({r.site for r in rosters})],
+        "effective_date": ["<=", max(end, getdate())]}, fields=["name", "site", "effective_date", "weekdays", "starts_at", "ends_at", "revision"], limit_page_length=0):
+        result["shop_schedules"].setdefault(row.site, []).append(row)
     for roster in rosters:
         if not service:
             access.staff().fields("Employee", ["name", "company", "employee_name", "status", "date_of_joining", "relieving_date", "default_shift", "holiday_list"])
@@ -68,8 +71,13 @@ def resolve(roster, work_date, ctx):
     if emp.status != "Active" and not emp.relieving_date:
         return dict(output, state="Review")
     rev, exception = rules.choose_revision(ctx["revisions"].get(roster.employee, []), work_date)
-    if not rev:
-        return output
+    if not rev or rev["mode"] == "Shop":
+        shared = [r for r in ctx.get("shop_schedules", {}).get(roster.site, []) if getdate(r.effective_date) <= work_date]
+        shared = max(shared, key=lambda r: (getdate(r.effective_date), int(r.revision)), default=None)
+        if not shared:
+            return output
+        rev = dict(shared, kind="Regular", mode="Hours")
+        output["source_revision"] = shared.revision
     output.update(source=rev["name"], exception=exception["name"] if exception else None)
     # Leave wins over ad-hoc work times. Half-day handling is explicit review until
     # partial-shift rules are specified; it must never become an automatic absence.

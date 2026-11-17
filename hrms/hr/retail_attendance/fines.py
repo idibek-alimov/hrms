@@ -79,8 +79,7 @@ def save_fine_rule(site, effective_date, enabled, absence_amount, late_brackets,
         return result
 
     # Check optimistic concurrency against latest revision
-    existing = get_effective_rule(site, getdate())
-    latest_version = existing["revision"] if existing else 0
+    latest_version = frappe.db.get_value("Retail Attendance Fine Rule", {"site": site}, "max(revision)") or 0
     commands._version(version, latest_version)
 
     rule = access.save(

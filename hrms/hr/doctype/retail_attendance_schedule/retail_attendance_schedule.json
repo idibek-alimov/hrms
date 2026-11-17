@@ -76,7 +76,7 @@
    "fieldname": "mode",
    "label": "Mode",
    "fieldtype": "Select",
-   "options": "Hours\nNative\nOff\nUsual",
+   "options": "Hours\nNative\nOff\nUsual\nShop",
    "reqd": 1
   },
   {

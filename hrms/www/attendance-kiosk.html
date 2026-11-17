@@ -1,37 +1,88 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="{{ lang }}">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="csrf-token" content="{{ csrf_token }}">
-  <title>Посещаемость · Ҳозиршавӣ</title>
-  <link rel="stylesheet" href="/assets/hrms/css/attendance-kiosk.css">
-</head>
-<body>
-  <main class="attendance-kiosk">
-    <header><h1 id="title"></h1><select id="language" aria-label="Язык / Забон"><option value="ru">Русский</option><option value="tg">Тоҷикӣ</option></select></header>
-    <p id="shop"></p>
-    <p id="status" role="status" aria-live="polite"></p>
-    <section id="pairing" hidden>
-      <form id="pair-form">
-        <label for="code" id="code-label"></label>
-        <input id="code" type="password" autocomplete="off" maxlength="160" required>
-        <button id="pair" type="submit"></button>
-      </form>
-    </section>
-    <section id="attendance" hidden>
-      <form id="attendance-form" autocomplete="off">
-        <label for="employee" id="employee-label"></label>
-        <select id="employee" required></select>
-        <label for="pin">PIN</label>
-        <input id="pin" type="password" inputmode="numeric" pattern="[0-9]{4,8}" minlength="4" maxlength="8" autocomplete="off" required>
-        <div class="actions"><button id="in" type="submit" value="IN"></button><button id="out" type="submit" value="OUT"></button></div>
-      </form>
-    </section>
-    <section id="recovery" hidden><p id="pending-label"></p><div class="actions"><button id="lookup" type="button"></button><button id="retry" type="button"></button></div></section>
-    <button id="refresh" type="button"></button>
-    <p id="online-help" class="muted"></p>
-  </main>
-  <script src="/assets/hrms/js/attendance-kiosk.js" defer></script>
-</body>
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="csrf-token" content="{{ csrf_token }}" />
+		<title>Посещаемость · Ҳозиршавӣ</title>
+		<link rel="stylesheet" href="/assets/hrms/css/attendance-screen.css" />
+	</head>
+	<body>
+		<main class="attendance-kiosk">
+			<header>
+				<div>
+					<h1 id="title"></h1>
+					<p id="shop"></p>
+				</div>
+				<div class="header-actions">
+					<time id="clock"></time
+					><select id="language" aria-label="Язык / Забон">
+						<option value="ru">Русский</option>
+						<option value="tg">Тоҷикӣ</option></select
+					><button id="management" type="button"></button>
+				</div>
+			</header>
+			<p id="status" role="status" aria-live="polite"></p>
+			<p id="entry" hidden><a href="/app/staff-attendance" id="entry-link"></a></p>
+			<div class="screen-body">
+				<section id="attendance" hidden>
+					<form id="attendance-form" autocomplete="off">
+						<label for="employee" id="employee-label"></label>
+						<select id="employee" required></select>
+						<label for="pin">PIN</label>
+						<input
+							id="pin"
+							type="password"
+							inputmode="numeric"
+							pattern="[0-9]{4,8}"
+							minlength="4"
+							maxlength="8"
+							autocomplete="off"
+							required
+						/>
+						<div class="actions">
+							<button id="in" type="submit" value="IN"></button
+							><button id="out" type="submit" value="OUT"></button>
+						</div>
+					</form>
+				</section>
+				<section id="board" hidden>
+					<h2 id="board-title"></h2>
+					<div class="table-wrap">
+						<table>
+							<thead id="board-head"></thead>
+							<tbody id="board-rows"></tbody>
+						</table>
+					</div>
+				</section>
+			</div>
+			<section id="recovery" hidden>
+				<p id="pending-label"></p>
+				<div class="actions">
+					<button id="lookup" type="button"></button
+					><button id="retry" type="button"></button>
+				</div>
+			</section>
+			<button id="refresh" type="button"></button>
+			<p id="online-help" class="muted"></p>
+			<dialog id="unlock-dialog">
+				<form id="unlock-form">
+					<h2 id="unlock-title"></h2>
+					<label for="manager-password" id="password-label"></label
+					><input
+						id="manager-password"
+						type="password"
+						autocomplete="current-password"
+						required
+					/>
+					<p id="unlock-error" role="alert"></p>
+					<div class="actions">
+						<button id="cancel-unlock" type="button"></button
+						><button id="confirm-unlock" type="submit"></button>
+					</div>
+				</form>
+			</dialog>
+		</main>
+		<script src="/assets/hrms/js/attendance-screen.js" defer></script>
+	</body>
 </html>

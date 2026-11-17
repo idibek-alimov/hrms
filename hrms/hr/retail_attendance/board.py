@@ -34,6 +34,11 @@ def get_board(site, start_date, view="week"):
     by_employee_date = {}
     for p in presences:
         by_employee_date.setdefault((p.employee, day_dates[p.day]), []).append(p)
+    decisions = frappe.get_list("Retail Attendance Fine Decision", filters={"site": site,
+        "employee": ["in", employees], "business_date": ["between", [start, end]]},
+        fields=["employee", "business_date", "kind", "amount", "late_minutes", "status"], limit_page_length=0) if employees else []
+    fine_by_date = {(r.employee, str(r.business_date)): dict(kind=r.kind, amount=r.amount,
+        late_minutes=r.late_minutes, status=r.status) for r in decisions}
     rows = []
     now = now_datetime()
     for roster in rosters:
@@ -45,8 +50,9 @@ def get_board(site, start_date, view="week"):
             planned = schedules.resolve(roster, date, ctx)
             actual = sorted(by_employee_date.get((roster.employee, str(date)), []), key=lambda p: get_datetime(p.in_time))
             cells.append(dict(planned, day=next((n for n, value in day_dates.items() if value == str(date)), None), actual=[dict(name=p.name, version=p.version, in_time=str(p.in_time), out_time=str(p.out_time) if p.out_time else None,
-                automatic=bool(p.automatic_checkout)) for p in actual], status=schedules.display_status(planned, actual, now, day_states.get(str(date)))))
-        rows.append(dict(employee=roster.employee, employee_name=emp.employee_name, roster=roster.name,
+                automatic=bool(p.automatic_checkout)) for p in actual], fine=fine_by_date.get((roster.employee, str(date))),
+                status=schedules.display_status(planned, actual, now, day_states.get(str(date)))))
+        rows.append(dict(employee=roster.employee, employee_name=emp.employee_name, active=emp.status == "Active", roster=roster.name,
             version=roster.version, enrolled_from=str(roster.enrolled_from), cells=cells,
             regular=dict(mode=regular.mode, weekdays=regular.weekdays,
                 starts_at=str(rules.parse_time(regular.starts_at)) if regular.starts_at else None,
@@ -56,6 +62,7 @@ def get_board(site, start_date, view="week"):
         "opened_at", "closed_at", "close_recorded_at", "closed_by", "difference_minutes"], order_by="business_date desc", limit_page_length=14)
     return dict(site=dict(name=doc.name, site_name=doc.site_name, company=doc.company, version=doc.version,
         opens_at=str(rules.parse_time(doc.opens_at)), closes_at=str(rules.parse_time(doc.closes_at))), start_date=str(start), today=str(getdate()),
+        currency=frappe.db.get_value("Company", doc.company, "default_currency"),
         server_time=str(now), current_day=_day(current, employees), rows=rows, history=history, kiosk_available=True)
 
 
