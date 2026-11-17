@@ -32,9 +32,10 @@ class TestRetailAttendanceP3(test_p2.TestRetailAttendanceP2):
         self.token = cookies[credentials.COOKIE]
         self.day = self.open()["day"]
 
-    def punch(self, action="IN", pin=None, request_id=None, employee=None):
+    def punch(self, action="IN", pin=None, request_id=None, employee=None, at=None):
+        punch_time = at if at is not None else (self.clock + timedelta(minutes=30))
         with patch.object(credentials, "cookie_token", return_value=self.token), \
-            patch.object(presence, "now_datetime", return_value=self.clock + timedelta(minutes=30)):
+            patch.object(presence, "now_datetime", return_value=punch_time):
             with access.staff().atomic():
                 return presence.kiosk_action(employee or self.employee_id, pin or self.pin, action, request_id or str(uuid4()), self.day)
 

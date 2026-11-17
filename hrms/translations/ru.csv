@@ -905,3 +905,19 @@ No current check-in was found in this shop.,Ð’ ÑÑ‚Ð¾Ð¼ Ð¼Ð°Ð³
 Recorded departure cannot be removed. Enter its corrected time.,Ð—Ð°Ð¿Ð¸ÑÐ°Ð½Ð½Ñ‹Ð¹ ÑƒÑ…Ð¾Ð´ Ð½ÐµÐ»ÑŒÐ·Ñ ÑƒÐ´Ð°Ð»Ð¸Ñ‚ÑŒ. Ð£ÐºÐ°Ð¶Ð¸Ñ‚Ðµ Ð¸ÑÐ¿Ñ€Ð°Ð²Ð»ÐµÐ½Ð½Ð¾Ðµ Ð²Ñ€ÐµÐ¼Ñ.
 Too many attempts. Wait five minutes and try again.,Ð¡Ð»Ð¸ÑˆÐºÐ¾Ð¼ Ð¼Ð½Ð¾Ð³Ð¾ Ð¿Ð¾Ð¿Ñ‹Ñ‚Ð¾Ðº. ÐŸÐ¾Ð´Ð¾Ð¶Ð´Ð¸Ñ‚Ðµ Ð¿ÑÑ‚ÑŒ Ð¼Ð¸Ð½ÑƒÑ‚ Ð¸ Ð¿Ð¾Ð²Ñ‚Ð¾Ñ€Ð¸Ñ‚Ðµ.
 "Use arrival and departure times between day opening and now, with departure after arrival.",Ð£ÐºÐ°Ð¶Ð¸Ñ‚Ðµ Ð¿Ñ€Ð¸Ñ…Ð¾Ð´ Ð¸ ÑƒÑ…Ð¾Ð´ Ð¼ÐµÐ¶Ð´Ñƒ Ð¾Ñ‚ÐºÑ€Ñ‹Ñ‚Ð¸ÐµÐ¼ Ð´Ð½Ñ Ð¸ Ñ‚ÐµÐºÑƒÑ‰Ð¸Ð¼ Ð²Ñ€ÐµÐ¼ÐµÐ½ÐµÐ¼; ÑƒÑ…Ð¾Ð´ Ð´Ð¾Ð»Ð¶ÐµÐ½ Ð±Ñ‹Ñ‚ÑŒ Ð¿Ð¾Ð·Ð¶Ðµ Ð¿Ñ€Ð¸Ñ…Ð¾Ð´Ð°.
+
+Retail Attendance Fine Rule,Правило штрафов за посещаемость
+Retail Attendance Fine Decision,Решение по штрафу за посещаемость
+Fine compensation,Компенсация штрафа
+Fine cancellation,Отмена штрафа
+Fine Rules,Правила штрафов
+Lateness brackets,Пороги опозданий
+Absence fine,Штраф за отсутствие
+"Attendance corrected: {0}","Посещаемость исправлена: {0}"
+"Arrived on time (scheduled {0}, arrived {1})","Прибыл вовремя (по графику {0}, прибыл {1})"
+"Late by {0} min (scheduled {1}, arrived {2})","Опоздание на {0} мин (по графику {1}, прибыл {2})"
+"Late by {0} min (below fine threshold)","Опоздание на {0} мин (ниже порога штрафа)"
+"Missed shift ({0} - {1})","Пропуск смены ({0} - {1})"
+Missed shift (no absence fine configured),Пропуск смены (штраф за отсутствие не настроен)
+Not scheduled to work.,Не запланирован по графику.
+Shift in progress.,Смена продолжается.

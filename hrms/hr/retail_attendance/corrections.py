@@ -83,6 +83,8 @@ def correct(site, day, employee, in_time, out_time, reason, version, request_id)
     audit.db_set("after_state", json.dumps(snapshot(p)))
     record.version += 1
     access.save(record)
+    from hrms.hr.retail_attendance import fines
+    fines.reconcile_on_correction(site, record, employee, p)
     result = dict(saved=True, presence=p.name, version=p.version, correction=audit.name)
     receipt.status, receipt.result = "Complete", json.dumps(result)
     access.save(receipt)

@@ -162,10 +162,7 @@ def save_schedule(site, roster, kind, effective_date, mode, weekdays, starts_at,
     _version(version, record.version)
     if day < getdate(record.enrolled_from):
         frappe.throw(_("The schedule starts before attendance enrollment."))
-    # Retroactive changes can change a fine/paid salary. Their audited reconciliation
-    # is P4. Do not accept such edits and silently leave frozen attendance unchanged.
-    if day < getdate() or frappe.db.exists(PREFIX + "Day", {"site": site, "business_date": [">=", day]}):
-        frappe.throw(_("This period already started. Use a future date; attendance corrections are not enabled yet."))
+    # Retroactive schedule changes reconcile attendance fines in P4.
     if mode == "Native":
         ctx = schedules.load_context([record], day, day)
         candidates = [r.shift_type for r in ctx["assignments"].get(record.employee, []) if not r.end_date or getdate(r.end_date) >= day]
@@ -177,6 +174,13 @@ def save_schedule(site, roster, kind, effective_date, mode, weekdays, starts_at,
         employee=record.employee, revision=record.version + 1, **{k: v for k, v in payload.items() if k != "version"})))
     record.version += 1
     access.save(record)
+    if day <= getdate():
+        day_name = frappe.db.get_value(PREFIX + "Day", {"site": site, "business_date": day}, "name")
+        has_presence = frappe.db.exists(PREFIX + "Presence", {"employee": record.employee, "day": day_name}) if day_name else False
+        has_decision = frappe.db.exists("Retail Attendance Fine Decision", {"employee": record.employee, "business_date": day})
+        if has_presence or has_decision:
+            from hrms.hr.retail_attendance import fines
+            fines.apply_or_reconcile_fine(site, day, record.employee)
     result = dict(schedule=row.name, roster=roster, version=record.version)
     _receipt(doc, request_id, digest, "Schedule", result)
     return result
@@ -307,6 +311,8 @@ def _finish_close(site, day, receipt):
         site.version += 1
         access.save(site)
         receipt.status = "Complete"
+        from hrms.hr.retail_attendance import fines
+        fines.process_scheduled_absence_fines(site.name, day.business_date, force_shift_ended=True)
     result = dict(day=day.name, status=day.status, remaining=count, operation=receipt.name, error=day.close_error)
     access.save(day)
     receipt.result = json.dumps(result)

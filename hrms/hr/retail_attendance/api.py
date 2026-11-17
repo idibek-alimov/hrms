@@ -128,6 +128,38 @@ def get_presence_history(site, day, employee):
         fields=["reason", "before_state", "after_state", "owner", "creation"], order_by="creation desc", limit_page_length=100)
 
 
+@frappe.whitelist(methods=["POST"])
+def save_fine_rule(site, effective_date, enabled, absence_amount, late_brackets, version, request_id, reason=""):
+    from hrms.hr.retail_attendance.fines import save_fine_rule as save_rule
+    with access.staff().atomic():
+        return save_rule(site, effective_date, enabled, absence_amount, late_brackets, reason, version, request_id)
+
+
+@frappe.whitelist()
+def get_fine_rule(site, work_date=None):
+    from hrms.hr.retail_attendance.fines import get_effective_rule
+    commands.site_doc(site)
+    return get_effective_rule(site, work_date)
+
+
+@frappe.whitelist()
+def get_fine_history(site, employee=None, month=None):
+    doc = commands.site_doc(site)
+    filters = {"site": site}
+    if employee:
+        access.employee(employee, doc.company)
+        filters["employee"] = employee
+    if month:
+        filters["business_date"] = ["between", [f"{month}-01", f"{month}-31"]]
+    return frappe.get_list(
+        "Retail Attendance Fine Decision",
+        filters=filters,
+        fields=["name", "employee", "business_date", "kind", "late_minutes", "amount", "status", "cancellation_reason", "creation"],
+        order_by="business_date desc, creation desc",
+        limit_page_length=100,
+    )
+
+
 def _kiosk_guard():
     from hrms.hr.retail_attendance.credentials import transport, guard_rate
     transport()

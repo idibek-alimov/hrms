@@ -65,6 +65,8 @@ def write(site, day, employee, kind, timestamp, operation):
         p = save(frappe.get_doc(dict(doctype="Retail Attendance Presence", company=site.company,
             site=site.name, employee=employee, day=day.name, in_time=stamp, schedule=json.dumps(plan), version=1)))
         p.check_in = native(p, "IN", stamp, operation).name
+        from hrms.hr.retail_attendance import fines
+        fines.apply_or_reconcile_fine(site.name, day.business_date, employee, presence=p, day=day)
     elif kind == "OUT":
         if not current or current.day != day.name or current.site != site.name:
             frappe.throw(_("No current check-in was found in this shop."))

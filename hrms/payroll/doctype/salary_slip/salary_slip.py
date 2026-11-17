@@ -789,7 +789,9 @@ class SalarySlip(TransactionBase):
 				lwp += equivalent_lwp
 
 			elif d.status == "Absent":
-				absent += 1
+				from hrms.hr.retail_attendance.schedules import is_managed
+				if not is_managed(self.employee, d.attendance_date):
+					absent += 1
 
 		return lwp, absent
 

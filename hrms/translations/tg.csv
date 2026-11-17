@@ -53,3 +53,19 @@ No current check-in was found in this shop.,Ð”Ð°Ñ€ Ð¸Ð½ Ð¼Ð°Ò�
 Recorded departure cannot be removed. Enter its corrected time.,Ð Ð°Ñ„Ñ‚Ð°Ð½Ð¸ ÑÐ°Ð±Ñ‚ÑˆÑƒÐ´Ð°Ñ€Ð¾ Ð½ÐµÑÑ‚ ÐºÐ°Ñ€Ð´Ð°Ð½ Ð¼ÑƒÐ¼ÐºÐ¸Ð½ Ð½ÐµÑÑ‚. Ð’Ð°Ò›Ñ‚Ð¸ Ð¸ÑÐ»Ð¾Ò³ÑˆÑƒÐ´Ð°Ñ€Ð¾ Ð²Ð¾Ñ€Ð¸Ð´ ÐºÑƒÐ½ÐµÐ´.
 Too many attempts. Wait five minutes and try again.,ÐšÓ¯ÑˆÐ¸ÑˆÒ³Ð¾ Ð°Ð· Ò³Ð°Ð´ Ð·Ð¸Ñ‘Ð´Ð°Ð½Ð´. ÐŸÐ°Ð½Ò· Ð´Ð°Ò›Ð¸Ò›Ð° Ð¸Ð½Ñ‚Ð¸Ð·Ð¾Ñ€ ÑˆÐ°Ð²ÐµÐ´ Ð²Ð° Ð´ÑƒÐ±Ð¾Ñ€Ð° ÐºÓ¯ÑˆÐ¸Ñˆ ÐºÑƒÐ½ÐµÐ´.
 "Use arrival and departure times between day opening and now, with departure after arrival.",ÐžÐ¼Ð°Ð´Ð°Ð½ Ð²Ð° Ñ€Ð°Ñ„Ñ‚Ð°Ð½Ñ€Ð¾ Ð±Ð°Ð¹Ð½Ð¸ ÐºÑƒÑˆÐ¾Ð´Ð°Ð½Ð¸ Ñ€Ó¯Ð· Ð²Ð° Ò³Ð¾Ð·Ð¸Ñ€Ð° Ð²Ð¾Ñ€Ð¸Ð´ ÐºÑƒÐ½ÐµÐ´; Ñ€Ð°Ñ„Ñ‚Ð°Ð½ Ð±Ð¾ÑÐ´ Ð±Ð°ÑŠÐ´ Ð°Ð· Ð¾Ð¼Ð°Ð´Ð°Ð½ Ð±Ð¾ÑˆÐ°Ð´.
+
+Retail Attendance Fine Rule,Қоидаи ҷаримаи давомот
+Retail Attendance Fine Decision,Қарори ҷаримаи давомот
+Fine compensation,Ҷуброни ҷарима
+Fine cancellation,Бекор кардани ҷарима
+Fine Rules,Қоидаҳои ҷаримаҳо
+Lateness brackets,Зинаҳои дермонӣ
+Absence fine,Ҷарима барои набудан
+"Attendance corrected: {0}","Давомот ислоҳ шуд: {0}"
+"Arrived on time (scheduled {0}, arrived {1})","Сари вақт омад (аз рӯи график {0}, омад {1})"
+"Late by {0} min (scheduled {1}, arrived {2})","Дермонӣ ба {0} дақ (аз рӯи график {1}, омад {2})"
+"Late by {0} min (below fine threshold)","Дермонӣ ба {0} дақ (аз ҳадди ҷарима камтар)"
+"Missed shift ({0} - {1})","Навбати корӣ иҷро нашуд ({0} - {1})"
+Missed shift (no absence fine configured),Навбати корӣ иҷро нашуд (ҷарима таъин нашудааст)
+Not scheduled to work.,Дар график пешбинӣ нашудааст.
+Shift in progress.,Навбати корӣ давом дорад.

@@ -32,7 +32,7 @@ def exact_permission(doc, ptype):
 
 def service_save(doc):
     ctx = _service.get()
-    if not ctx or doc.doctype not in ("Retail Attendance Presence", "Retail Attendance Operation", "Employee Checkin"):
+    if not ctx or doc.doctype not in ("Retail Attendance Presence", "Retail Attendance Operation", "Employee Checkin", "Retail Attendance Fine Decision"):
         staff().deny()
     if doc.doctype == "Employee Checkin":
         from hrms.hr.retail_attendance.events import event_matches
