@@ -450,7 +450,7 @@
 	labels();
 	clock();
 	setInterval(clock, 1000);
-	setInterval(() => refresh(true), 15000);
+	setInterval(() => refresh(true), 60000);
 	refresh().then(() => {
 		if (pending()) lookup();
 	});

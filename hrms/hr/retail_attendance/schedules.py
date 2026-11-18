@@ -19,13 +19,16 @@ def is_managed(employee, work_date):
 
 def load_context(rosters, start, end):
     employees = [r.employee for r in rosters]
-    result = dict(revisions={}, assignments={}, leave={}, employees={}, holidays={}, shifts={}, shop_schedules={})
+    result = dict(revisions={}, assignments={}, leave={}, employees={}, holidays={}, shifts={}, shop_schedules={}, shop_holidays={})
     if not employees:
         return result
     ctx = access.service_scope()
     service = bool(ctx and len(rosters) == 1 and rosters[0].employee == ctx["employee"]
         and rosters[0].site == ctx["site"] and rosters[0].company == ctx["company"])
     read = frappe.get_all if service else frappe.get_list
+    for row in read("Retail Attendance Shop Holiday", filters={"site": ["in", list({r.site for r in rosters})],
+        "holiday_date": ["between", [start, end]], "active": 1}, fields=["site", "holiday_date"], limit_page_length=0):
+        result["shop_holidays"].setdefault(row.site, set()).add(getdate(row.holiday_date))
     for row in read("Retail Attendance Shop Schedule", filters={"site": ["in", list({r.site for r in rosters})],
         "effective_date": ["<=", max(end, getdate())]}, fields=["name", "site", "effective_date", "weekdays", "starts_at", "ends_at", "revision"], limit_page_length=0):
         result["shop_schedules"].setdefault(row.site, []).append(row)
@@ -70,6 +73,8 @@ def resolve(roster, work_date, ctx):
         return dict(output, state="Not employed")
     if emp.status != "Active" and not emp.relieving_date:
         return dict(output, state="Review")
+    if work_date in ctx.get("shop_holidays", {}).get(roster.site, set()):
+        return dict(output, state="Holiday")
     rev, exception = rules.choose_revision(ctx["revisions"].get(roster.employee, []), work_date)
     if not rev or rev["mode"] == "Shop":
         shared = [r for r in ctx.get("shop_schedules", {}).get(roster.site, []) if getdate(r.effective_date) <= work_date]

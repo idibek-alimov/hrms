@@ -1,0 +1,84 @@
+{
+ "doctype": "DocType",
+ "name": "Retail Attendance Shop Holiday",
+ "module": "HR",
+ "autoname": "hash",
+ "engine": "InnoDB",
+ "track_changes": 1,
+ "allow_rename": 0,
+ "field_order": [
+  "company",
+  "site",
+  "holiday_date",
+  "description",
+  "weekly_off",
+  "active",
+  "version"
+ ],
+ "fields": [
+  {
+   "fieldname": "company",
+   "label": "Company",
+   "fieldtype": "Link",
+   "options": "Company",
+   "reqd": 1
+  },
+  {
+   "fieldname": "site",
+   "label": "Site",
+   "fieldtype": "Link",
+   "options": "Retail Attendance Site",
+   "reqd": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "holiday_date",
+   "label": "Holiday Date",
+   "fieldtype": "Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "description",
+   "label": "Description",
+   "fieldtype": "Data"
+  },
+  {
+   "fieldname": "weekly_off",
+   "label": "Weekly Off",
+   "fieldtype": "Check",
+   "default": "0"
+  },
+  {
+   "fieldname": "active",
+   "label": "Active",
+   "fieldtype": "Check",
+   "default": "1"
+  },
+  {
+   "fieldname": "version",
+   "label": "Version",
+   "fieldtype": "Int",
+   "default": "0"
+  }
+ ],
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "create": 1,
+   "write": 1
+  },
+  {
+   "role": "Retail Manager",
+   "read": 1,
+   "create": 1,
+   "write": 1
+  },
+  {
+   "role": "Retail Owner",
+   "read": 1,
+   "create": 1,
+   "write": 1
+  }
+ ]
+}

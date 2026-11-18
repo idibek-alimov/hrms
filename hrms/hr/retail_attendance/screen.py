@@ -104,6 +104,11 @@ def start(site=None, attendance_only=0):
 @frappe.whitelist(methods=["POST"])
 def context():
     screen = require_screen()
+    try:
+        from hrms.hr.retail_attendance import fines
+        fines.process_open_day_fines(screen.site)
+    except Exception:
+        frappe.log_error(title="Attendance Kiosk Fine Reconciliation Failed")
     data = board.get_board(screen.site, str(getdate()), "today")
     day = data["current_day"]
     # Explicit projection: never ship employee documents, salaries, leave details,

@@ -52,7 +52,7 @@
    "fieldname": "action",
    "label": "Action",
    "fieldtype": "Select",
-   "options": "Site\nEnroll\nSchedule\nOpen\nClose\nPIN\nDevice\nRevoke\nIN\nOUT\nCorrection\nFineRule\nShopSchedule",
+   "options": "Site\nEnroll\nSchedule\nOpen\nClose\nPIN\nDevice\nRevoke\nIN\nOUT\nCorrection\nFineRule\nShopSchedule\nShopHoliday",
    "reqd": 1
   },
   {

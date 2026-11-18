@@ -631,10 +631,12 @@ def get_holidays_for_employee(employee, start_date, end_date, raise_exception=Tr
 
 	return: list of dicts with `holiday_date` and `description`
 	"""
+	from hrms.hr.retail_attendance.holidays import employee_holidays
+	shop_holidays = employee_holidays(employee, start_date, end_date, only_non_weekly)
 	holiday_list = get_holiday_list_for_employee(employee, raise_exception=raise_exception)
 
 	if not holiday_list:
-		return []
+		return shop_holidays
 
 	filters = {"parent": holiday_list, "holiday_date": ("between", [start_date, end_date])}
 
@@ -645,7 +647,10 @@ def get_holidays_for_employee(employee, start_date, end_date, raise_exception=Tr
 		"Holiday", fields=["description", "holiday_date"], filters=filters, order_by="holiday_date"
 	)
 
-	return holidays
+	by_date = {getdate(row.holiday_date): row for row in holidays}
+	for row in shop_holidays:
+		by_date[getdate(row.holiday_date)] = row
+	return [by_date[date] for date in sorted(by_date)]
 
 
 @erpnext.allow_regional

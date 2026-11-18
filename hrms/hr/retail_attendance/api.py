@@ -4,6 +4,19 @@ import frappe
 from hrms.hr.retail_attendance import access, commands, schedules
 
 
+@frappe.whitelist()
+def get_shop_holidays(site):
+    from hrms.hr.retail_attendance.holidays import get_holidays
+    return get_holidays(site)
+
+
+@frappe.whitelist(methods=["POST"])
+def save_shop_holidays(site, mode, version, request_id, dates=None, from_date=None, to_date=None,
+        weekdays="", description="", active=1):
+    from hrms.hr.retail_attendance.holidays import save_holidays
+    return save_holidays(site, mode, version, request_id, dates, from_date, to_date, weekdays, description, active)
+
+
 @frappe.whitelist(methods=["POST"])
 def configure_site(company, site_name, opens_at, closes_at, request_id, site=None, version=None):
     with access.staff().atomic():
@@ -84,6 +97,12 @@ def get_context(company=None):
 @frappe.whitelist()
 def get_board(site, start_date, view="week"):
     from hrms.hr.retail_attendance.board import get_board as load
+    if view in ("today", "day"):
+        try:
+            from hrms.hr.retail_attendance import fines
+            fines.process_open_day_fines(site)
+        except Exception:
+            frappe.log_error(title="Staff Attendance Fine Reconciliation Failed")
     return load(site, start_date, view)
 
 

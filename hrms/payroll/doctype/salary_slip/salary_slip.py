@@ -662,7 +662,9 @@ class SalarySlip(TransactionBase):
 			holiday_dates = get_holiday_dates_between(holiday_list, start_date, end_date)
 			frappe.cache().hset(HOLIDAYS_BETWEEN_DATES, key, holiday_dates)
 
-		return holiday_dates
+		from hrms.hr.retail_attendance.holidays import employee_holidays
+		shop_dates = employee_holidays(self.employee, start_date, end_date)
+		return sorted({getdate(d) for d in holiday_dates} | {getdate(d.holiday_date) for d in shop_dates})
 
 	def calculate_lwp_or_ppl_based_on_leave_application(
 		self, holidays, working_days_list, daily_wages_fraction_for_half_day

@@ -9,6 +9,7 @@ def setup():
         ("Retail Attendance Day", ["site", "business_date"], "retail_site_business_date"),
         ("Retail Attendance Schedule", ["roster", "revision"], "retail_roster_revision"),
         ("Retail Attendance Shop Schedule", ["site", "revision"], "retail_shop_schedule_revision"),
+        ("Retail Attendance Shop Holiday", ["site", "holiday_date"], "retail_shop_holiday_date"),
         ("Retail Attendance Fine Rule", ["site", "revision"], "retail_site_fine_revision"),
         ("Retail Attendance Fine Decision", ["employee", "business_date"], "retail_emp_date_fine_decision"),
     ):

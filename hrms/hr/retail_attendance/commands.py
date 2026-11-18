@@ -312,7 +312,7 @@ def _finish_close(site, day, receipt):
         access.save(site)
         receipt.status = "Complete"
         from hrms.hr.retail_attendance import fines
-        fines.process_scheduled_absence_fines(site.name, day.business_date, force_shift_ended=True)
+        fines.process_scheduled_absence_fines(site.name, day.business_date)
     result = dict(day=day.name, status=day.status, remaining=count, operation=receipt.name, error=day.close_error)
     access.save(day)
     receipt.result = json.dumps(result)

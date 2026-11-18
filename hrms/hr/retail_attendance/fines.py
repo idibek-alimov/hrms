@@ -1,6 +1,7 @@
 """Automatic lateness and absence fines integrated with native staff pay."""
 import hashlib
 import json
+from datetime import timedelta
 from uuid import UUID, uuid4
 
 import frappe
@@ -135,7 +136,7 @@ def evaluate_fine(rule, schedule, in_time=None, shift_ended=False):
         brackets = rule.get("brackets") or []
         matching = [b for b in brackets if late_min >= b["late_minutes"]]
         if matching:
-            highest = max(matching, key=lambda b: flt(b["amount"]))
+            highest = max(matching, key=lambda b: b["late_minutes"])
             return dict(
                 state="applicable",
                 kind="Lateness",
@@ -154,7 +155,7 @@ def evaluate_fine(rule, schedule, in_time=None, shift_ended=False):
                 reason=_("Late by {0} min (below fine threshold)").format(late_min),
             )
     else:
-        now = now_datetime()
+        now = now_datetime().replace(microsecond=0)
         if shift_ended or now >= ends_at:
             absence_amt = flt(rule.get("absence_amount", 0))
             if absence_amt > 0:
@@ -175,6 +176,28 @@ def evaluate_fine(rule, schedule, in_time=None, shift_ended=False):
                     late_minutes=0,
                     reason=_("Missed shift (no absence fine configured)"),
                 )
+        elif now > starts_at:
+            late_min = int((now - starts_at).total_seconds() // 60)
+            brackets = rule.get("brackets") or []
+            matching = [b for b in brackets if late_min >= b["late_minutes"]]
+            if matching:
+                highest = max(matching, key=lambda b: b["late_minutes"])
+                return dict(
+                    state="applicable",
+                    kind="Lateness",
+                    amount=flt(highest["amount"]),
+                    late_minutes=late_min,
+                    reason=_("Not arrived; late by {0} min (scheduled {1})").format(
+                        late_min, starts_at.strftime("%H:%M")
+                    ),
+                )
+            return dict(
+                state="no_fine",
+                kind="None",
+                amount=0,
+                late_minutes=late_min,
+                reason=_("Not arrived; late by {0} min (below fine threshold)").format(late_min),
+            )
         else:
             return dict(state="pending", kind="None", amount=0, late_minutes=0, reason=_("Shift in progress."))
 
@@ -226,6 +249,12 @@ def apply_or_reconcile_fine(site_name, business_date, employee, presence=None, d
 
         if decision and decision.status == "Applied":
             if decision.kind == kind and flt(decision.amount) == amt:
+                if presence and decision.presence != presence.name:
+                    decision.presence = presence.name
+                    decision.day = day.name if hasattr(day, "name") else (day or presence.day)
+                    decision.late_minutes = evaluation["late_minutes"]
+                    decision.version += 1
+                    return save_fn(decision)
                 return decision  # Already posted with exact amount; idempotent
 
             # Amount or kind changed (e.g. corrected arrival): cancel/compensate old fine first
@@ -283,6 +312,22 @@ def apply_or_reconcile_fine(site_name, business_date, employee, presence=None, d
             decision.reload()
             return decision
 
+        expected_presence = presence.name if hasattr(presence, "name") else (presence or None)
+        expected_day = day.name if hasattr(day, "name") else (day or (presence.day if presence else None))
+        if (
+            decision
+            and decision.status == "No Fine"
+            and decision.kind == "None"
+            and flt(decision.amount) == 0
+            and int(decision.late_minutes or 0) == int(evaluation.get("late_minutes", 0))
+            and decision.rule_source == (rule.get("name") if rule else None)
+            and int(decision.rule_revision or 0) == int(rule.get("revision", 0) if rule else 0)
+            and decision.schedule_source == schedule.get("source")
+            and decision.presence == expected_presence
+            and decision.day == expected_day
+        ):
+            return decision
+
         d_hash = hashlib.sha256(f"{employee}:{business_date}:{site_name}".encode()).hexdigest()
         fields = dict(
             doctype="Retail Attendance Fine Decision",
@@ -337,14 +382,13 @@ def process_scheduled_absence_fines(site_name, business_date=None, force_shift_e
     now = now_datetime()
 
     day_name = frappe.db.get_value("Retail Attendance Day", {"site": site_name, "business_date": business_date}, "name")
-    day_status = frappe.db.get_value("Retail Attendance Day", day_name, "status") if day_name else None
 
     for roster in rosters:
         sched = schedules.resolve(roster, business_date, context)
         if sched.get("state") != "Scheduled":
             continue
         ends_at = get_datetime(sched["ends_at"])
-        if not (force_shift_ended or day_status == "Closed" or now >= ends_at):
+        if not (force_shift_ended or now >= ends_at):
             continue  # Shift has not yet ended
 
         # Check against active attendance day
@@ -356,3 +400,76 @@ def process_scheduled_absence_fines(site_name, business_date=None, force_shift_e
             applied.append(decision.name)
 
     return applied
+
+
+def process_open_day_fines(site_name=None):
+    """Reconcile current lateness brackets and shift-end absences for open days."""
+    day_filters = {
+        "status": ["in", ["Open", "Closed"]],
+        "business_date": [">=", getdate() - timedelta(days=1)],
+    }
+    if site_name:
+        day_filters["site"] = site_name
+    days = frappe.get_all(
+        "Retail Attendance Day",
+        filters=day_filters,
+        fields=["name", "site", "business_date"],
+        limit_page_length=0,
+    )
+    if site_name:
+        curr_day = frappe.db.get_value("Retail Attendance Site", site_name, "current_day")
+        if curr_day and not any(d.name == curr_day for d in days):
+            c_doc = frappe.get_doc("Retail Attendance Day", curr_day)
+            if c_doc.status == "Open":
+                days.append(frappe._dict(name=c_doc.name, site=c_doc.site, business_date=c_doc.business_date))
+    for day in days:
+        site = frappe.get_doc("Retail Attendance Site", day.site)
+        rosters = frappe.get_all(
+            "Retail Attendance Roster",
+            filters={
+                "site": day.site,
+                "company": site.company,
+                "enrolled_from": ["<=", day.business_date],
+            },
+            fields=["name", "employee", "company", "site", "enrolled_from", "version"],
+            limit_page_length=0,
+        )
+        rule = get_effective_rule(day.site, day.business_date)
+        if not rule or not rule.get("enabled"):
+            continue
+        context = schedules.load_context(rosters, day.business_date, day.business_date)
+        now = now_datetime().replace(microsecond=0)
+        first_threshold = min((b["late_minutes"] for b in rule.get("brackets", [])), default=None)
+        for index, roster in enumerate(rosters):
+            presence_name = frappe.db.get_value(
+                "Retail Attendance Presence",
+                {"day": day.name, "employee": roster.employee},
+                "name",
+            )
+            presence_doc = frappe.get_doc("Retail Attendance Presence", presence_name) if presence_name else None
+            if not presence_doc:
+                schedule = schedules.resolve(roster, day.business_date, context)
+                if schedule.get("state") != "Scheduled":
+                    continue
+                starts_at = get_datetime(schedule["starts_at"])
+                ends_at = get_datetime(schedule["ends_at"])
+                has_late_bracket = first_threshold and now >= starts_at + timedelta(minutes=first_threshold)
+                has_absence_fine = flt(rule.get("absence_amount", 0)) > 0 and now >= ends_at
+                if not (has_late_bracket or has_absence_fine):
+                    continue
+            savepoint = f"retail_attendance_fine_{index}"
+            frappe.db.savepoint(savepoint)
+            try:
+                apply_or_reconcile_fine(
+                    day.site,
+                    day.business_date,
+                    roster.employee,
+                    presence=presence_doc,
+                    day=day.name,
+                )
+            except Exception:
+                frappe.db.rollback(save_point=savepoint)
+                frappe.log_error(
+                    title="Retail attendance fine reconciliation failed",
+                    message=f"Day: {day.name}; site: {day.site}; employee: {roster.employee}",
+                )

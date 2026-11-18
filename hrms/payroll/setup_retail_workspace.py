@@ -31,6 +31,7 @@ def get_cash_in_hand():
 
 def ensure_default_holiday_list():
 	"""Ensures a default Holiday List exists for companies and employees to prevent payroll calculation errors."""
+	remove_generated_sundays()
 	companies = frappe.get_all("Company", fields=["name", "default_holiday_list"])
 	for comp in companies:
 		if not comp.default_holiday_list or not frappe.db.exists("Holiday List", comp.default_holiday_list):
@@ -41,15 +42,35 @@ def ensure_default_holiday_list():
 					"doctype": "Holiday List",
 					"holiday_list_name": hl_name,
 					"from_date": f"{current_year}-01-01",
-					"to_date": f"{current_year}-12-31",
-					"weekly_off": "Sunday"
+					"to_date": f"{current_year}-12-31"
 				})
-				hl.get_weekly_off_dates()
 				hl.insert(ignore_permissions=True)
 			else:
 				hl = frappe.get_doc("Holiday List", hl_name)
 
 			frappe.db.set_value("Company", comp.name, "default_holiday_list", hl.name)
+
+
+def remove_generated_sundays():
+	"""One-time source repair of the old retail seed, never arbitrary holiday lists."""
+	key = "retail_generated_sundays_removed_v1"
+	if frappe.db.get_default(key):
+		return
+	for company in frappe.get_all("Company", pluck="name"):
+		name = f"{company} Standard Holiday List"
+		if not frappe.db.exists("Holiday List", name):
+			continue
+		doc = frappe.get_doc("Holiday List", name)
+		if doc.weekly_off != "Sunday":
+			continue
+		labels = {"Sunday", "Воскресенье", "Якшанбе", frappe._("Sunday")}
+		doc.set("holidays", [row for row in doc.holidays if not (
+			row.weekly_off and getdate(row.holiday_date).weekday() == 6 and row.description in labels)])
+		doc.weekly_off = ""
+		doc.save(ignore_permissions=True)
+		frappe.clear_document_cache("Holiday List", name)
+	frappe.cache().delete_value("holidays_between_dates")
+	frappe.db.set_default(key, 1)
 
 
 def upsert_number_cards():
