@@ -118,7 +118,15 @@
 			];
 			values.forEach((v, i) => {
 				const td = document.createElement("td");
-				td.textContent = v;
+				if (i === 4 && e.status) {
+					const pill = document.createElement("span");
+					pill.textContent = v;
+					const statusClass = (e.status || "").toLowerCase().replace(/\s+/g, "-");
+					pill.className = `status-pill status-${statusClass}`;
+					td.append(pill);
+				} else {
+					td.textContent = v;
+				}
 				if (i === 5 && e.fine?.status === "Applied") td.className = "fine";
 				if (i === 3 && actual?.automatic) {
 					const s = document.createElement("small");
@@ -146,6 +154,7 @@
         $("sign-out").textContent = t("Выйти из аккаунта", "Баромадан аз ҳисоб");
         $("workday").hidden = false;
         $("workday").textContent = ctx.day_info ? (ctx.day_info.status === "Closing" ? t("Продолжить закрытие", "Идомаи бастан") : t("Закрыть рабочий день", "Бастани рӯзи корӣ")) : t("Открыть рабочий день", "Кушодани рӯзи корӣ");
+        $("workday").classList.toggle("btn-open", !ctx.day_info);
 		$("board").hidden = !ctx.open;
 		$("entry").hidden = true;
 	}

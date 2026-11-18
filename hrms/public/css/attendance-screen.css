@@ -173,6 +173,102 @@ a:focus-visible {
 #management {
 	font-size: 14px;
 }
+.kiosk-footer {
+	margin-top: 24px;
+	padding-top: 16px;
+	border-top: 1px solid var(--border);
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 16px;
+}
+.kiosk-footer-actions {
+	display: flex;
+	gap: 12px;
+	align-items: center;
+	flex-wrap: wrap;
+}
+#workday {
+	font-size: 14px;
+	background: #dc2626;
+	color: #ffffff;
+	border: 1px solid #dc2626;
+	font-weight: 500;
+}
+#workday:hover {
+	background: #b91c1c;
+	border-color: #b91c1c;
+}
+#workday.btn-open {
+	background: var(--primary);
+	color: #ffffff;
+	border-color: var(--primary);
+}
+#workday.btn-open:hover {
+	opacity: 0.9;
+}
+#sign-out {
+	font-size: 14px;
+	background: transparent;
+	color: var(--muted);
+	border: 1px solid var(--border);
+}
+#sign-out:hover {
+	color: var(--error);
+	border-color: var(--error);
+}
+#refresh {
+	font-size: 14px;
+}
+
+/* Status badge pills */
+.status-pill {
+	display: inline-block;
+	padding: 3px 10px;
+	border-radius: 9999px;
+	font-size: 13px;
+	font-weight: 500;
+	line-height: 1.4;
+	white-space: nowrap;
+}
+.status-at-work {
+	background: #dcfce7;
+	color: #15803d;
+}
+.status-overtime {
+	background: #ccfbf1;
+	color: #0f766e;
+}
+.status-expected {
+	background: #f1f5f9;
+	color: #475569;
+}
+.status-late {
+	background: #fef3c7;
+	color: #b45309;
+}
+.status-not-arrived,
+.status-not-recorded {
+	background: #fee2e2;
+	color: #b91c1c;
+}
+.status-checked-out {
+	background: #e0f2fe;
+	color: #0369a1;
+}
+.status-day-off,
+.status-holiday,
+.status-approved-leave {
+	background: #f3f4f6;
+	color: #6b7280;
+}
+.status-unconfigured,
+.status-review {
+	background: #fef9c3;
+	color: #854d0e;
+}
+
 @media (max-width: 850px) {
 	.screen-body {
 		grid-template-columns: 1fr;
@@ -194,6 +290,16 @@ a:focus-visible {
 	td {
 		padding: 10px 8px;
 	}
+	.kiosk-footer {
+		flex-direction: column;
+		align-items: stretch;
+	}
+	.kiosk-footer-actions {
+		flex-direction: column;
+	}
+	.kiosk-footer-actions button {
+		width: 100%;
+	}
 }
 @media (prefers-color-scheme: dark) {
 	:root {
@@ -204,5 +310,50 @@ a:focus-visible {
 		--border: #3b4552;
 		--primary: #365f80;
 		--error: #ff9393;
+	}
+	.status-at-work {
+		background: #143823;
+		color: #4ade80;
+	}
+	.status-overtime {
+		background: #133a36;
+		color: #2dd4bf;
+	}
+	.status-expected {
+		background: #1e293b;
+		color: #94a3b8;
+	}
+	.status-late {
+		background: #3b280c;
+		color: #fbbf24;
+	}
+	.status-not-arrived,
+	.status-not-recorded {
+		background: #3c1414;
+		color: #f87171;
+	}
+	.status-checked-out {
+		background: #0c2d48;
+		color: #38bdf8;
+	}
+	.status-day-off,
+	.status-holiday,
+	.status-approved-leave {
+		background: #272f3d;
+		color: #9ca3af;
+	}
+	.status-unconfigured,
+	.status-review {
+		background: #3b2d10;
+		color: #fcd34d;
+	}
+	#workday {
+		background: #b91c1c;
+		border-color: #b91c1c;
+		color: #ffffff;
+	}
+	#workday:hover {
+		background: #991b1b;
+		border-color: #991b1b;
 	}
 }
