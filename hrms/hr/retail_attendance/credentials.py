@@ -2,6 +2,7 @@
 import re
 import secrets
 from datetime import timedelta
+from uuid import uuid4
 
 import frappe
 from frappe import _
@@ -17,17 +18,37 @@ def pin_context(company, employee):
     access.manager(company)
     emp = access.employee(employee, company, write=True)
     rows = frappe.get_all("Retail Attendance Credential", filters={"employee": employee}, fields=["enabled", "version"])
-    return dict(company=company, employee=employee, available=True, active=emp.status == "Active",
-        enabled=bool(rows and rows[0].enabled), version=rows[0].version if rows else 0)
+    roster = frappe.db.get_value("Retail Attendance Roster", {"employee": employee, "company": company}, ["name", "site"], as_dict=True)
+    sites = frappe.get_all("Retail Attendance Site", filters={"company": company}, fields=["name", "site_name"], order_by="creation asc")
+    site_name = None
+    if roster and roster.site:
+        site_name = frappe.db.get_value("Retail Attendance Site", roster.site, "site_name")
+    return dict(company=company, employee=employee, available=bool(sites), active=emp.status == "Active",
+        enabled=bool(rows and rows[0].enabled), version=rows[0].version if rows else 0,
+        enrolled=bool(roster), site_name=site_name,
+        sites=[dict(name=s.name, label=s.site_name) for s in sites])
 
 
-def set_pin(company, employee, pin, version, request_id, revoke=False):
+def set_pin(company, employee, pin, version, request_id, revoke=False, site=None):
     access.manager(company)
     emp = access.employee(employee, company, write=True)
     commands.lock_employee(employee, company)
     roster = frappe.db.get_value("Retail Attendance Roster", {"employee": employee}, ["site", "company"], as_dict=True)
     if not roster or roster.company != company:
-        frappe.throw(_("Add the employee to an attendance shop first."))
+        if revoke:
+            return dict(company=company, employee=employee, version=version, enabled=False)
+        site_name = site
+        if not site_name:
+            sites = frappe.get_all("Retail Attendance Site", filters={"company": company}, fields=["name"], order_by="creation asc")
+            if not sites:
+                frappe.throw(_("Add the employee to an attendance shop first."))
+            site_name = sites[0].name
+        target_site = commands.site_doc(site_name)
+        if target_site.company != company:
+            access.staff().deny()
+        enroll_id = str(uuid4())
+        commands.enroll(site_name, employee, frappe.utils.getdate(), enroll_id)
+        roster = frappe.db.get_value("Retail Attendance Roster", {"employee": employee}, ["site", "company"], as_dict=True)
     site = commands.site_doc(roster.site, lock=True)
     digest, receipt, result = commands._request(site, request_id, "PIN", dict(employee=employee, version=version, revoke=bool(revoke)))
     if receipt:

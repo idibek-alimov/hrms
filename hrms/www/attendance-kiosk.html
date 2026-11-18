@@ -22,6 +22,7 @@
 					><button id="management" type="button"></button>
 				</div>
 			</header>
+			<div class="actions"><button id="workday" type="button" hidden></button><button id="sign-out" type="button" hidden></button></div>
 			<p id="status" role="status" aria-live="polite"></p>
 			<p id="entry" hidden><a href="/app/staff-attendance" id="entry-link"></a></p>
 			<div class="screen-body">
@@ -68,6 +69,7 @@
 			<dialog id="unlock-dialog">
 				<form id="unlock-form">
 					<h2 id="unlock-title"></h2>
+					<p id="workday-help" hidden></p>
 					<label for="manager-password" id="password-label"></label
 					><input
 						id="manager-password"
@@ -75,6 +77,7 @@
 						autocomplete="current-password"
 						required
 					/>
+					<label id="close-time-label" for="close-time" hidden>Время закрытия / Вақти бастан</label><input id="close-time" type="datetime-local" step="1" hidden />
 					<p id="unlock-error" role="alert"></p>
 					<div class="actions">
 						<button id="cancel-unlock" type="button"></button
@@ -83,6 +86,6 @@
 				</form>
 			</dialog>
 		</main>
-		<script src="/assets/hrms/js/attendance-screen.js" defer></script>
+		<script src="/assets/hrms/js/attendance-screen.js?v=9" defer></script>
 	</body>
 </html>

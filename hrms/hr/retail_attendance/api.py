@@ -23,21 +23,36 @@ def save_schedule(site, roster, kind, effective_date, mode, version, request_id,
 
 
 @frappe.whitelist(methods=["POST"])
-def open_day(site, business_date, version, request_id):
+def open_day(site, business_date, version, request_id, password=None):
+    _workday_password(password)
     with access.staff().atomic():
         return commands.open_day(site, business_date, version, request_id)
 
 
 @frappe.whitelist(methods=["POST"])
-def begin_close(site, day, effective_close, version, request_id, note=""):
+def begin_close(site, day, effective_close, version, request_id, note="", password=None):
+    _workday_password(password)
     with access.staff().atomic():
         return commands.begin_close(site, day, effective_close, note, version, request_id)
 
 
 @frappe.whitelist(methods=["POST"])
-def continue_close(site, operation):
+def continue_close(site, operation, password=None):
+    _workday_password(password)
     with access.staff().atomic():
         return commands.continue_close(site, operation)
+
+
+def _workday_password(password):
+    from hrms.hr.retail_attendance import screen
+    from frappe.utils.password import check_password
+    access.manager()
+    frappe.form_dict.pop("password", None)
+    screen.rate("screen-unlock", frappe.session.user, 5)
+    try:
+        check_password(frappe.session.user, password or "", delete_tracker_cache=False)
+    except frappe.AuthenticationError:
+        frappe.throw("Manager password is incorrect.", frappe.ValidationError)
 
 
 @frappe.whitelist()
@@ -70,6 +85,18 @@ def get_context(company=None):
 def get_board(site, start_date, view="week"):
     from hrms.hr.retail_attendance.board import get_board as load
     return load(site, start_date, view)
+
+
+@frappe.whitelist()
+def get_day_history(site, day):
+    from hrms.hr.retail_attendance import board
+    shop = commands.site_doc(site)
+    record = frappe.get_doc("Retail Attendance Day", day)
+    record.check_permission("read")
+    if record.site != site or record.company != shop.company:
+        access.staff().deny()
+    data = board.get_board(site, str(record.business_date), "day")
+    return dict(rows=data["rows"], currency=data["currency"])
 
 
 @frappe.whitelist()

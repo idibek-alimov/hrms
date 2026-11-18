@@ -394,14 +394,15 @@ class TestRetailAttendanceP2(unittest.TestCase):
             self.presence(employee, day)
         closing = self.close(day)
         frappe.db.commit()
-        with patch.object(commands, "CLOSE_BATCH_SIZE", 1):
+        with patch.object(commands, "CLOSE_BATCH_SIZE", 1), patch.object(api, "_workday_password"):
             first = api.continue_close(self.site, closing["operation"])
         self.assertEqual(first["status"], "Closing")
         self.assertEqual(first["remaining"], 1)
         frappe.db.commit()
         # A later interrupted request cannot erase the earlier committed OUT.
         frappe.db.rollback()
-        done = api.continue_close(self.site, closing["operation"])
+        with patch.object(api, "_workday_password"):
+            done = api.continue_close(self.site, closing["operation"])
         self.assertEqual(done["status"], "Closed")
         self.assertEqual(frappe.db.count("Employee Checkin", {"retail_attendance_day": day, "log_type": "OUT"}), 2)
 

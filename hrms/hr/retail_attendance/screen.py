@@ -15,7 +15,7 @@ from frappe.utils.password import check_password
 from hrms.hr.retail_attendance import access, board, commands, credentials, presence
 
 PREFIX = "hrms.hr.retail_attendance.screen."
-ENDPOINTS = {PREFIX + name for name in ("context", "punch", "result", "unlock")}
+ENDPOINTS = {PREFIX + name for name in ("context", "punch", "result", "unlock", "workday", "close_batch", "sign_out")}
 
 
 def session_key():
@@ -76,8 +76,14 @@ def rate(kind, identity, limit):
 
 
 @frappe.whitelist(methods=["POST"])
-def start(site):
+def start(site=None, attendance_only=0):
     """An explicit manager action; never opens/closes an attendance day."""
+    if not site:
+        access.manager()
+        sites = frappe.get_list("Retail Attendance Site", fields=["name"], limit_page_length=2)
+        if len(sites) != 1:
+            frappe.throw(_("Select the shop in Attendance first."))
+        site = sites[0].name
     shop = commands.site_doc(site, lock=True)
     if frappe.db.get_single_value("HR Settings", "allow_geolocation_tracking"):
         frappe.throw(_("Attendance needs a setup without required GPS coordinates. Ask the administrator to review HR settings."))
@@ -89,6 +95,7 @@ def start(site):
         access.staff().deny()
     doc.site, doc.company = shop.name, shop.company
     doc.locked = 1
+    doc.attendance_only = int(bool(int(attendance_only))) or int(doc.attendance_only or 0)
     # Private session state is not a user-editable attendance record.
     doc.save(ignore_permissions=True) if old else doc.insert(ignore_permissions=True, set_name=key)
     return dict(url="/attendance-kiosk")
@@ -102,6 +109,8 @@ def context():
     # Explicit projection: never ship employee documents, salaries, leave details,
     # PIN credentials, schedule history or internal manager operation payloads.
     return dict(shop=data["site"]["site_name"], scope=screen.name, currency=data["currency"],
+        attendance_only=bool(screen.attendance_only), today=data["today"], site_version=data["site"]["version"],
+        day_info=day,
         server_time=data["server_time"], day=day["name"] if day else None,
         business_date=day["business_date"] if day else None,
         open=bool(day and day["status"] == "Open"), employees=[dict(
@@ -181,6 +190,8 @@ def result(request_id):
 def unlock(password):
     frappe.form_dict.pop("password", None)
     doc = require_screen(lock=True)
+    if doc.attendance_only:
+        access.staff().deny()
     rate("screen-unlock", doc.manager, 5)
     try:
         check_password(doc.manager, password, delete_tracker_cache=False)
@@ -189,3 +200,42 @@ def unlock(password):
         frappe.throw(_("Manager password is incorrect."), frappe.ValidationError)
     doc.db_set("locked", 0)
     return dict(url="/app/staff-attendance")
+
+
+def verify_manager(password):
+    frappe.form_dict.pop("password", None)
+    doc = require_screen()
+    rate("screen-unlock", doc.manager, 5)
+    try:
+        check_password(doc.manager, password, delete_tracker_cache=False)
+    except frappe.AuthenticationError:
+        frappe.throw(_("Manager password is incorrect."), frappe.ValidationError)
+    identity = hashlib.sha256(str(doc.manager).encode()).hexdigest()
+    frappe.cache.delete_value("attendance-rate:screen-unlock:" + identity)
+    return doc
+
+
+@frappe.whitelist(methods=["POST"])
+def workday(password, action, request_id, version, business_date=None, day=None, effective_close=None):
+    doc = verify_manager(password)
+    with access.staff().atomic():
+        if action == "Open":
+            return commands.open_day(doc.site, business_date, version, request_id)
+        if action == "Close":
+            return commands.begin_close(doc.site, day, effective_close, "", version, request_id)
+        access.staff().deny()
+
+
+@frappe.whitelist(methods=["POST"])
+def close_batch(password, operation):
+    doc = verify_manager(password)
+    with access.staff().atomic():
+        return commands.continue_close(doc.site, operation)
+
+
+@frappe.whitelist(methods=["POST"])
+def sign_out():
+    doc = require_screen()
+    url = "/login?redirect-to=" + ("%2Fattendance-kiosk%3Fattendance_only%3D1" if doc.attendance_only else "%2Fattendance-kiosk")
+    frappe.local.login_manager.logout()
+    return dict(url=url)

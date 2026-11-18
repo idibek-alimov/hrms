@@ -1,6 +1,7 @@
 /* Manager-opened attendance page. PINs/passwords never enter browser storage. */
 (() => {
 	const $ = (id) => document.getElementById(id);
+	let managerAction = "unlock";
 	let lang = document.documentElement.lang,
 		ctx,
 		busy = false,
@@ -139,14 +140,20 @@
 			tr.append(td);
 			$("board-rows").append(tr);
 		}
-		$("attendance").hidden = false;
-		$("board").hidden = false;
+		$("attendance").hidden = !ctx.open;
+        $("management").hidden = !!ctx.attendance_only;
+        $("sign-out").hidden = !ctx.attendance_only;
+        $("sign-out").textContent = t("Выйти из аккаунта", "Баромадан аз ҳисоб");
+        $("workday").hidden = false;
+        $("workday").textContent = ctx.day_info ? (ctx.day_info.status === "Closing" ? t("Продолжить закрытие", "Идомаи бастан") : t("Закрыть рабочий день", "Бастани рӯзи корӣ")) : t("Открыть рабочий день", "Кушодани рӯзи корӣ");
+		$("board").hidden = !ctx.open;
 		$("entry").hidden = true;
 	}
 	function controls() {
 		document.querySelectorAll("button,input,select").forEach((el) => (el.disabled = busy));
 		const p = pending();
 		$("recovery").hidden = !p;
+        $("workday").disabled = busy || !ctx || !!p;
 		$("in").disabled = $("out").disabled = busy || !ctx?.open || (!!p && !retrying);
 	}
 	async function call(method, args = {}) {
@@ -189,14 +196,14 @@
 		try {
 			ctx = await call("context");
 			clockBase = Date.parse(ctx.server_time.replace(" ", "T") + "Z");
-			clockReceived = Date.now();
+			clockReceived = performance.now();
 			draw();
 			clock();
 			if (!ctx.open)
 				status(
 					t(
-						"Рабочий день закрыт. Руководитель должен открыть день в посещаемости.",
-						"Рӯзи корӣ баста аст. Роҳбар бояд рӯзро дар ҳозиршавӣ кушояд."
+						"Рабочий день закрыт. Для открытия введите пароль руководителя.",
+						"Рӯзи корӣ баста аст. Барои кушодан рамзи роҳбарро ворид кунед."
 					)
 				);
 			else if (!quiet) status("");
@@ -350,12 +357,28 @@
 		);
 		$("pin").focus();
 	};
-	$("management").onclick = () => {
+	function managerDialog(action) {
+        managerAction = action;
+        $("workday-help").hidden = action !== "Close";
+        $("workday-help").textContent = t("Укажите фактическое время закрытия. Всем оставшимся на работе будет записан автоматический уход.", "Вақти воқеии бастанро нишон диҳед. Барои ҳамаи кормандони дар кор буда рафтани худкор сабт мешавад.");
+        $("close-time").hidden = $("close-time-label").hidden = action !== "Close";
+        $("close-time").required = action === "Close";
+		$("close-time").value = ctx?.server_time?.slice(0, 19).replace(" ", "T") || "";
+        $("unlock-title").textContent = action === "unlock" ? $("management").textContent : $("workday").textContent;
 		$("unlock-error").textContent = "";
 		$("manager-password").value = "";
 		$("unlock-dialog").showModal();
 	};
-	$("cancel-unlock").onclick = () => {
+	$("management").onclick = () => managerDialog("unlock");
+    $("workday").onclick = () => managerDialog(ctx.day_info ? (ctx.day_info.status === "Closing" ? "Resume" : "Close") : "Open");
+    $("sign-out").onclick = async () => {
+        if (busy || pending()) return;
+        busy = true; controls();
+        try { const saved = await call("sign_out"); location.replace(saved.url); }
+        catch { status(t("Не удалось выйти. Проверьте связь.", "Баромадан иҷро нашуд. Пайвастро санҷед."), true); }
+        finally { busy = false; controls(); }
+    };
+    $("cancel-unlock").onclick = () => {
 		$("manager-password").value = "";
 		$("unlock-dialog").close();
 	};
@@ -370,19 +393,42 @@
 		const password = $("manager-password").value;
 		$("manager-password").value = "";
 		try {
-			const saved = await call("unlock", { password });
+			if (managerAction !== "unlock") {
+                const storageKey = `attendance-day-command:${location.host}:${ctx.scope}`;
+                let intent = JSON.parse(localStorage.getItem(storageKey) || "null");
+                let saved;
+                if (ctx.day_info?.status === "Closing") {
+                    saved = await call("close_batch", { password, operation: ctx.day_info.close_operation });
+                } else {
+                    if (!intent) {
+                        intent = { action: managerAction, request_id: crypto.randomUUID(), version: managerAction === "Open" ? ctx.site_version : ctx.day_info.version,
+                            business_date: ctx.today, day: ctx.day, effective_close: $("close-time").value.replace("T", " ") };
+                        localStorage.setItem(storageKey, JSON.stringify(intent));
+                    }
+                    saved = await call("workday", { ...intent, password });
+                }
+                for (let batch = 0; saved.status === "Closing" && !saved.error && batch < 100; batch++)
+                    saved = await call("close_batch", { password, operation: saved.operation });
+                localStorage.removeItem(storageKey);
+                $("unlock-dialog").close();
+                status(saved.status === "Closing" ? t("Закрытие не завершено. Продолжите закрытие.", "Бастан анҷом наёфт. Бастанро идома диҳед.") : "");
+                return;
+            }
+            const saved = await call("unlock", { password });
 			try {
 				localStorage.removeItem("retail-attendance-screen");
 			} catch {}
 			location.replace(saved.url);
-		} catch {
+		} catch (error) {
+            if (error.rejected && ctx) localStorage.removeItem(`attendance-day-command:${location.host}:${ctx.scope}`);
 			$("unlock-error").textContent = t(
-				"Не удалось вернуться к управлению. Проверьте пароль и связь. После нескольких попыток подождите пять минут.",
-				"Бозгашт ба идоракунӣ иҷро нашуд. Рамз ва пайвастро санҷед. Пас аз чанд кӯшиш панҷ дақиқа интизор шавед."
+				"Действие не подтверждено. Проверьте пароль и связь. Повторите исходное действие. После нескольких попыток подождите пять минут.",
+				"Амал тасдиқ нашуд. Рамз ва пайвастро санҷед. Амали пешинаро такрор кунед. Пас аз чанд кӯшиш панҷ дақиқа интизор шавед."
 			);
 		} finally {
 			busy = false;
 			controls();
+            await refresh(true);
 		}
 	};
 	$("refresh").onclick = () => refresh();
@@ -393,7 +439,8 @@
 	};
 	function clock() {
 		$("clock").textContent = clockBase
-			? new Date(clockBase + Date.now() - clockReceived).toLocaleTimeString("ru-RU", {
+			? new Date(clockBase + performance.now() - clockReceived).toLocaleString(lang === "tg" ? "tg-TJ" : "ru-RU", {
+					day: "2-digit", month: "2-digit", year: "numeric",
 					hour: "2-digit",
 					minute: "2-digit",
 					timeZone: "UTC",

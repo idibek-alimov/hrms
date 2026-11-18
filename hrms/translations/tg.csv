@@ -35,24 +35,24 @@ Use attendance correction to change a managed event.,Барои тағйири �
 Use the Attendance page to change this record.,Ин сабтро дар саҳифаи ҳозиршавӣ тағйир диҳед.,
 Use the employee attendance screen for this employee.,Барои ин корманд саҳифаи ҳозиршавиро истифода баред.,
 Choose Today or Week.,«Имрӯз» ё «Ҳафта»-ро интихоб кунед.,
-A closed attendance day needs a departure no later than its closing time.,Ð‘Ð°Ñ€Ð¾Ð¸ Ñ€Ó¯Ð·Ð¸ Ð±Ð°ÑÑ‚Ð° Ð²Ð°Ò›Ñ‚Ð¸ Ñ€Ð°Ñ„Ñ‚Ð°Ð½ Ð½Ð°Ð±Ð¾ÑÐ´ Ð°Ð· Ð²Ð°Ò›Ñ‚Ð¸ Ð±Ð°ÑÑ‚Ð°Ð½ Ð´ÐµÑ€Ñ‚Ð°Ñ€ Ð±Ð¾ÑˆÐ°Ð´.
-A native attendance summary already exists. Review it before correcting this day.,Ð¥ÑƒÐ»Ð¾ÑÐ°Ð¸ Ò³Ð¾Ð·Ð¸Ñ€ÑˆÐ°Ð²Ð¸Ð¸ Ð¸Ð½ Ñ€Ó¯Ð· Ð°Ð»Ð»Ð°ÐºÐ°Ð¹ Ò³Ð°ÑÑ‚. ÐŸÐµÑˆ Ð°Ð· Ð¸ÑÐ»Ð¾Ò³ Ð¾Ð½Ñ€Ð¾ ÑÐ°Ð½Ò·ÐµÐ´.
-A visit is already recorded for this day. Ask the manager to correct it.,"ÐžÐ¼Ð°Ð´Ð°Ð½ Ð±Ð°Ñ€Ð¾Ð¸ Ð¸Ð½ Ñ€Ó¯Ð· Ð°Ð»Ð»Ð°ÐºÐ°Ð¹ ÑÐ°Ð±Ñ‚ ÑˆÑƒÐ´Ð°Ð°ÑÑ‚. ÐÐ· Ñ€Ð¾Ò³Ð±Ð°Ñ€ Ñ…Ð¾Ò³Ð¸Ñˆ ÐºÑƒÐ½ÐµÐ´, ÐºÐ¸ ÑÐ°Ð±Ñ‚Ñ€Ð¾ Ð¸ÑÐ»Ð¾Ò³ ÐºÑƒÐ½Ð°Ð´."
-Add the employee to an attendance shop first.,ÐÐ²Ð²Ð°Ð» ÐºÐ¾Ñ€Ð¼Ð°Ð½Ð´Ð¸ Ð¼Ð°Ð·ÐºÑƒÑ€Ñ€Ð¾ Ð±Ð° Ð¼Ð°Ò“Ð¾Ð·Ð°Ð¸ ÑÐ°Ð±Ñ‚Ð¸ Ò³Ð¾Ð·Ð¸Ñ€ÑˆÐ°Ð²Ó£ Ð¸Ð»Ð¾Ð²Ð° ÐºÑƒÐ½ÐµÐ´.
-Attendance PIN is incorrect or unavailable.,PIN Ð½Ð¾Ð´ÑƒÑ€ÑƒÑÑ‚ Ñ‘ Ð´Ð°ÑÑ‚Ð½Ð¾Ñ€Ð°Ñ Ð°ÑÑ‚.
-Attendance kiosks need a setup without required GPS coordinates. Ask the administrator to review HR settings.,"Ð‘Ð°Ñ€Ð¾Ð¸ ÑÐ°Ð±Ñ‚ Ñ‚Ð°Ð½Ð·Ð¸Ð¼Ð¾Ñ‚ Ð±Ðµ ÐºÐ¾Ð¾Ñ€Ð´Ð¸Ð½Ð°Ñ‚Ð°Ò³Ð¾Ð¸ Ò³Ð°Ñ‚Ð¼Ð¸Ð¸ GPS Ð»Ð¾Ð·Ð¸Ð¼ Ð°ÑÑ‚. ÐÐ· Ð°Ð´Ð¼Ð¸Ð½Ð¸ÑÑ‚Ñ€Ð°Ñ‚Ð¾Ñ€ Ñ…Ð¾Ò³Ð¸Ñˆ ÐºÑƒÐ½ÐµÐ´, ÐºÐ¸ Ñ‚Ð°Ð½Ð·Ð¸Ð¼Ð¾Ñ‚Ð¸ HR-Ñ€Ð¾ ÑÐ°Ð½Ò·Ð°Ð´."
-Attendance time cannot be before the day opened.,Ð’Ð°Ò›Ñ‚Ð¸ ÑÐ°Ð±Ñ‚ Ð½Ð°Ð¼ÐµÑ‚Ð°Ð²Ð¾Ð½Ð°Ð´ Ð°Ð· ÐºÑƒÑˆÐ¾Ð´Ð°Ð½Ð¸ Ñ€Ó¯Ð· Ð±Ð°Ñ€Ð²Ð°Ò›Ñ‚Ñ‚Ð°Ñ€ Ð±Ð¾ÑˆÐ°Ð´.
-Attendance verification is unavailable. Try again later.,Ð¡Ð°Ð½Ò·Ð¸ÑˆÐ¸ ÑÐ°Ð±Ñ‚ Ò³Ð¾Ð»Ð¾ Ð´Ð°ÑÑ‚Ð½Ð¾Ñ€Ð°Ñ Ð°ÑÑ‚. Ð‘Ð°ÑŠÐ´Ñ‚Ð°Ñ€ ÐºÓ¯ÑˆÐ¸Ñˆ ÐºÑƒÐ½ÐµÐ´.
-Close the employee's other attendance visit first.,ÐÐ²Ð²Ð°Ð» ÑÐ°Ð±Ñ‚Ð¸ ÐºÑƒÑˆÐ¾Ð´Ð°Ð¸ Ð´Ð¸Ð³Ð°Ñ€Ð¸ ÐºÐ¾Ñ€Ð¼Ð°Ð½Ð´Ñ€Ð¾ Ð±Ð¸Ð±Ð°Ð½Ð´ÐµÐ´.
-Departure must be after arrival.,Ð’Ð°Ò›Ñ‚Ð¸ Ñ€Ð°Ñ„Ñ‚Ð°Ð½ Ð±Ð¾ÑÐ´ Ð°Ð· Ð²Ð°Ò›Ñ‚Ð¸ Ð¾Ð¼Ð°Ð´Ð°Ð½ Ð´ÐµÑ€Ñ‚Ð°Ñ€ Ð±Ð¾ÑˆÐ°Ð´.
-Enter an attendance PIN of 4 to 8 digits for an active employee.,PIN-Ð¸ 4â€“8 Ñ€Ð°Ò›Ð°Ð¼Ó£ Ð±Ð°Ñ€Ð¾Ð¸ ÐºÐ¾Ñ€Ð¼Ð°Ð½Ð´Ð¸ Ñ„Ð°ÑŠÐ¾Ð» Ð²Ð¾Ñ€Ð¸Ð´ ÐºÑƒÐ½ÐµÐ´.
-Finish closing this attendance day before correcting it.,"ÐÐ²Ð²Ð°Ð» Ð±Ð°ÑÑ‚Ð°Ð½Ð¸ Ð¸Ð½ Ñ€Ó¯Ð·Ñ€Ð¾ Ð°Ð½Ò·Ð¾Ð¼ Ð´Ð¸Ò³ÐµÐ´, Ð±Ð°ÑŠÐ´ ÑÐ°Ð±Ñ‚Ñ€Ð¾ Ð¸ÑÐ»Ð¾Ò³ ÐºÑƒÐ½ÐµÐ´."
-Multiple visits need review before correction.,Ð¯ÐºÑ‡Ð°Ð½Ð´ Ð¾Ð¼Ð°Ð´Ð°Ð½Ñ€Ð¾ Ð¿ÐµÑˆ Ð°Ð· Ð¸ÑÐ»Ð¾Ò³ Ð±Ð¾ÑÐ´ ÑÐ°Ð½Ò·Ð¸Ð´.
-No confirmed working schedule. Ask the manager to review attendance.,Ò¶Ð°Ð´Ð²Ð°Ð»Ð¸ ÐºÐ¾Ñ€Ó£ Ñ‚Ð°ÑÐ´Ð¸Ò› Ð½Ð°ÑˆÑƒÐ´Ð°Ð°ÑÑ‚. Ð‘Ð° Ñ€Ð¾Ò³Ð±Ð°Ñ€ Ð¼ÑƒÑ€Ð¾Ò·Ð¸Ð°Ñ‚ ÐºÑƒÐ½ÐµÐ´.
-No current check-in was found in this shop.,Ð”Ð°Ñ€ Ð¸Ð½ Ð¼Ð°Ò“Ð¾Ð·Ð° Ð¾Ð¼Ð°Ð´Ð°Ð½Ð¸ Ò·Ð¾Ñ€Ó£ Ñ‘Ñ„Ñ‚ Ð½Ð°ÑˆÑƒÐ´.
-Recorded departure cannot be removed. Enter its corrected time.,Ð Ð°Ñ„Ñ‚Ð°Ð½Ð¸ ÑÐ°Ð±Ñ‚ÑˆÑƒÐ´Ð°Ñ€Ð¾ Ð½ÐµÑÑ‚ ÐºÐ°Ñ€Ð´Ð°Ð½ Ð¼ÑƒÐ¼ÐºÐ¸Ð½ Ð½ÐµÑÑ‚. Ð’Ð°Ò›Ñ‚Ð¸ Ð¸ÑÐ»Ð¾Ò³ÑˆÑƒÐ´Ð°Ñ€Ð¾ Ð²Ð¾Ñ€Ð¸Ð´ ÐºÑƒÐ½ÐµÐ´.
-Too many attempts. Wait five minutes and try again.,ÐšÓ¯ÑˆÐ¸ÑˆÒ³Ð¾ Ð°Ð· Ò³Ð°Ð´ Ð·Ð¸Ñ‘Ð´Ð°Ð½Ð´. ÐŸÐ°Ð½Ò· Ð´Ð°Ò›Ð¸Ò›Ð° Ð¸Ð½Ñ‚Ð¸Ð·Ð¾Ñ€ ÑˆÐ°Ð²ÐµÐ´ Ð²Ð° Ð´ÑƒÐ±Ð¾Ñ€Ð° ÐºÓ¯ÑˆÐ¸Ñˆ ÐºÑƒÐ½ÐµÐ´.
-"Use arrival and departure times between day opening and now, with departure after arrival.",ÐžÐ¼Ð°Ð´Ð°Ð½ Ð²Ð° Ñ€Ð°Ñ„Ñ‚Ð°Ð½Ñ€Ð¾ Ð±Ð°Ð¹Ð½Ð¸ ÐºÑƒÑˆÐ¾Ð´Ð°Ð½Ð¸ Ñ€Ó¯Ð· Ð²Ð° Ò³Ð¾Ð·Ð¸Ñ€Ð° Ð²Ð¾Ñ€Ð¸Ð´ ÐºÑƒÐ½ÐµÐ´; Ñ€Ð°Ñ„Ñ‚Ð°Ð½ Ð±Ð¾ÑÐ´ Ð±Ð°ÑŠÐ´ Ð°Ð· Ð¾Ð¼Ð°Ð´Ð°Ð½ Ð±Ð¾ÑˆÐ°Ð´.
+A closed attendance day needs a departure no later than its closing time.,Барои рӯзи баста вақти рафтан набояд аз вақти бастан дертар бошад.
+A native attendance summary already exists. Review it before correcting this day.,Хулосаи ҳозиршавии ин рӯз аллакай ҳаст. Пеш аз ислоҳ онро санҷед.
+A visit is already recorded for this day. Ask the manager to correct it.,"Омадан барои ин рӯз аллакай сабт шудааст. Аз роҳбар хоҳиш кунед, ки сабтро ислоҳ кунад."
+Add the employee to an attendance shop first.,Аввал корманди мазкурро ба мағозаи сабти ҳозиршавӣ илова кунед.
+Attendance PIN is incorrect or unavailable.,PIN нодуруст ё дастнорас аст.
+Attendance kiosks need a setup without required GPS coordinates. Ask the administrator to review HR settings.,"Барои сабт танзимот бе координатаҳои ҳатмии GPS лозим аст. Аз администратор хоҳиш кунед, ки танзимоти HR-ро санҷад."
+Attendance time cannot be before the day opened.,Вақти сабт наметавонад аз кушодани рӯз барвақттар бошад.
+Attendance verification is unavailable. Try again later.,Санҷиши сабт ҳоло дастнорас аст. Баъдтар кӯшиш кунед.
+Close the employee's other attendance visit first.,Аввал сабти кушодаи дигари кормандро бибандед.
+Departure must be after arrival.,Вақти рафтан бояд аз вақти омадан дертар бошад.
+Enter an attendance PIN of 4 to 8 digits for an active employee.,PIN-и 4–8 рақамӣ барои корманди фаъол ворид кунед.
+Finish closing this attendance day before correcting it.,"Аввал бастани ин рӯзро анҷом диҳед, баъд сабтро ислоҳ кунед."
+Multiple visits need review before correction.,Якчанд омаданро пеш аз ислоҳ бояд санҷид.
+No confirmed working schedule. Ask the manager to review attendance.,Ҷадвали корӣ тасдиқ нашудааст. Ба роҳбар муроҷиат кунед.
+No current check-in was found in this shop.,Дар ин мағоза омадани ҷорӣ ёфт нашуд.
+Recorded departure cannot be removed. Enter its corrected time.,Рафтани сабтшударо нест кардан мумкин нест. Вақти ислоҳшударо ворид кунед.
+Too many attempts. Wait five minutes and try again.,Кӯшишҳо аз ҳад зиёданд. Панҷ дақиқа интизор шавед ва дубора кӯшиш кунед.
+"Use arrival and departure times between day opening and now, with departure after arrival.",Омадан ва рафтанро байни кушодани рӯз ва ҳозира ворид кунед; рафтан бояд баъд аз омадан бошад.
 
 Retail Attendance Fine Rule,Қоидаи ҷаримаи давомот
 Retail Attendance Fine Decision,Қарори ҷаримаи давомот

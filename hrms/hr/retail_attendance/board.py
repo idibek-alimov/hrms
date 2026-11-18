@@ -10,7 +10,7 @@ from hrms.hr.retail_attendance import commands, rules, schedules
 
 def get_board(site, start_date, view="week"):
     doc = commands.site_doc(site)
-    if view not in ("today", "week"):
+    if view not in ("today", "week", "day"):
         frappe.throw(_("Choose Today or Week."))
     current = frappe.get_doc("Retail Attendance Day", doc.current_day) if doc.current_day else None
     # Today's work belongs to the still-open business day across midnight.
@@ -59,7 +59,16 @@ def get_board(site, start_date, view="week"):
                 ends_at=str(rules.parse_time(regular.ends_at)) if regular.ends_at else None) if regular else None))
     rows.sort(key=lambda r: r["employee_name"].casefold())
     history = frappe.get_list("Retail Attendance Day", filters={"site": site}, fields=["name", "business_date", "status",
-        "opened_at", "closed_at", "close_recorded_at", "closed_by", "difference_minutes"], order_by="business_date desc", limit_page_length=14)
+        "opened_at", "owner", "closed_at", "close_recorded_at", "closed_by", "difference_minutes"], order_by="business_date desc", limit_page_length=100)
+    history_presence = frappe.get_list("Retail Attendance Presence", filters={"site": site,
+        "day": ["in", [h.name for h in history]], "employee": ["in", employees]},
+        fields=["day", "employee"], limit_page_length=0) if history and employees else []
+    history_fines = frappe.get_list("Retail Attendance Fine Decision", filters={"site": site,
+        "business_date": ["in", [h.business_date for h in history]], "employee": ["in", employees], "status": "Applied"},
+        fields=["business_date", "amount"], limit_page_length=0) if history and employees else []
+    for h in history:
+        h.employee_count = len({p.employee for p in history_presence if p.day == h.name})
+        h.fine_total = sum(float(f.amount) for f in history_fines if str(f.business_date) == str(h.business_date))
     return dict(site=dict(name=doc.name, site_name=doc.site_name, company=doc.company, version=doc.version,
         opens_at=str(rules.parse_time(doc.opens_at)), closes_at=str(rules.parse_time(doc.closes_at))), start_date=str(start), today=str(getdate()),
         currency=frappe.db.get_value("Company", doc.company, "default_currency"),

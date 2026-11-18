@@ -10,7 +10,8 @@
   "manager",
   "company",
   "site",
-  "locked"
+  "locked",
+  "attendance_only"
  ],
  "fields": [
   {
@@ -39,6 +40,12 @@
    "label": "Locked",
    "fieldtype": "Check",
    "default": "1"
+  },
+  {
+   "fieldname": "attendance_only",
+   "label": "Attendance only",
+   "fieldtype": "Check",
+   "default": "0"
   }
  ],
  "permissions": []
