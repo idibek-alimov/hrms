@@ -940,3 +940,5 @@ The attendance day for this shop is not open.,Рабочий день посещ
 "Invalid or unverified offline attendance evidence.","Недействительное или непроверенное свидетельство посещаемости офлайн."
 "Employee {0} has no check-in record for the stated attendance day.","Сотрудник {0} не имеет отметки о входе за указанный день посещаемости."
 "Employee check-in time is later than evidence capture time.","Время входа сотрудника позже времени фиксации свидетельства."
+Left,Уволен,
+Left,Уволен,Employee
