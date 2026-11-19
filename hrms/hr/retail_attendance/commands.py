@@ -146,7 +146,7 @@ def save_schedule(site, roster, kind, effective_date, mode, weekdays, starts_at,
     day = getdate(effective_date)
     if kind not in ("Regular", "Exception") or mode not in (("Shop", "Hours", "Native", "Off") if kind == "Regular" else ("Hours", "Off", "Usual")):
         frappe.throw(_("Choose a supported schedule change."))
-    note = _text(reason or "", required=kind == "Exception")
+    note = _text(reason or "", required=False)
     try:
         week = rules.weekdays(weekdays) if kind == "Regular" and mode not in ("Off", "Shop") else ""
         starts, ends = (str(rules.parse_time(t)) for t in (starts_at, ends_at)) if mode == "Hours" else (None, None)

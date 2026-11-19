@@ -47,3 +47,28 @@ class TestAttendanceP9(test_p8.TestRetailAttendanceP8):
             self.assertEqual(result["status"], "Closed")
             self.assertFalse(screen.context()["open"])
         self.assertTrue(screen.current().locked)
+
+    def test_waive_fine_and_enriched_board_context(self):
+        self.prepare_screen()
+        from erpnext.setup import staff_pay_actions
+        emp = self.employees[0].name
+        staff_pay_actions.save_pay_input(self.company, emp, "Salary", str(frappe.utils.getdate())[:7],
+            amount=1000, reason="Test salary", request_id=str(uuid4()))
+        api.save_fine_rule(self.site, str(frappe.utils.getdate()), 1, 100, '[{"late_minutes":15,"amount":20}]', 0, str(uuid4()))
+        with self.request("/attendance-kiosk", "GET"), patch.object(screen, "now_datetime", return_value=self.clock + timedelta(minutes=40)):
+            screen.punch(emp, "634829", "IN", str(uuid4()), self.day)
+        board_data = api.get_board(self.site, str(frappe.utils.getdate()), "today")
+        self.assertIn("unenrolled_count", board_data)
+        emp_row = next(r for r in board_data["rows"] if r["employee"] == emp)
+        self.assertTrue(emp_row["has_pin"])
+        self.assertEqual(emp_row["cells"][0]["fine"]["amount"], 20)
+        decision_name = emp_row["cells"][0]["fine"]["name"]
+        self.assertTrue(decision_name)
+        frappe.set_user("Administrator")
+        res = api.waive_fine(self.site, decision_name, "Excused by store manager", str(uuid4()))
+        self.assertEqual(res["status"], "Cancelled")
+        history = api.get_fine_history(self.site, employee=emp, month="2026-11")
+        if not history:
+            history = api.get_fine_history(self.site, employee=emp, month=str(frappe.utils.getdate())[:7])
+        self.assertEqual(history[0]["status"], "Cancelled")
+        self.assertEqual(history[0]["cancellation_reason"], "Excused by store manager")

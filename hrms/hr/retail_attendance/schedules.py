@@ -34,7 +34,7 @@ def load_context(rosters, start, end):
         result["shop_schedules"].setdefault(row.site, []).append(row)
     for roster in rosters:
         if not service:
-            access.staff().fields("Employee", ["name", "company", "employee_name", "status", "date_of_joining", "relieving_date", "default_shift", "holiday_list"])
+            access.staff().fields("Employee", ["name", "company", "employee_name", "designation", "status", "date_of_joining", "relieving_date", "default_shift", "holiday_list"])
         result["employees"][roster.employee] = frappe.get_doc("Employee", roster.employee) if service else access.employee(roster.employee, roster.company)
     for dt, fields in (
         ("Retail Attendance Schedule", ["name", "employee", "roster", "kind", "effective_date", "mode", "weekdays", "starts_at", "ends_at", "revision"]),

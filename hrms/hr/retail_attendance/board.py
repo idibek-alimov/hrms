@@ -5,7 +5,7 @@ import frappe
 from frappe import _
 from frappe.utils import get_datetime, getdate, now_datetime
 
-from hrms.hr.retail_attendance import commands, rules, schedules
+from hrms.hr.retail_attendance import access, commands, rules, schedules
 
 
 def get_board(site, start_date, view="week"):
@@ -36,9 +36,10 @@ def get_board(site, start_date, view="week"):
         by_employee_date.setdefault((p.employee, day_dates[p.day]), []).append(p)
     decisions = frappe.get_list("Retail Attendance Fine Decision", filters={"site": site,
         "employee": ["in", employees], "business_date": ["between", [start, end]]},
-        fields=["employee", "business_date", "kind", "amount", "late_minutes", "status"], limit_page_length=0) if employees else []
-    fine_by_date = {(r.employee, str(r.business_date)): dict(kind=r.kind, amount=r.amount,
-        late_minutes=r.late_minutes, status=r.status) for r in decisions}
+        fields=["name", "employee", "business_date", "kind", "amount", "late_minutes", "status", "cancellation_reason"], limit_page_length=0) if employees else []
+    fine_by_date = {(r.employee, str(r.business_date)): dict(name=r.name, kind=r.kind, amount=r.amount,
+        late_minutes=r.late_minutes, status=r.status, cancellation_reason=r.cancellation_reason) for r in decisions}
+    pin_employees = set(frappe.get_all("Retail Attendance Credential", filters={"employee": ["in", employees], "enabled": 1}, pluck="employee")) if employees else set()
     rows = []
     now = now_datetime()
     for roster in rosters:
@@ -52,7 +53,8 @@ def get_board(site, start_date, view="week"):
             cells.append(dict(planned, day=next((n for n, value in day_dates.items() if value == str(date)), None), actual=[dict(name=p.name, version=p.version, in_time=str(p.in_time), out_time=str(p.out_time) if p.out_time else None,
                 automatic=bool(p.automatic_checkout)) for p in actual], fine=fine_by_date.get((roster.employee, str(date))),
                 status=schedules.display_status(planned, actual, now, day_states.get(str(date)))))
-        rows.append(dict(employee=roster.employee, employee_name=emp.employee_name, active=emp.status == "Active", roster=roster.name,
+        rows.append(dict(employee=roster.employee, employee_name=emp.employee_name, designation=emp.get("designation"),
+            has_pin=roster.employee in pin_employees, active=emp.status == "Active", roster=roster.name,
             version=roster.version, enrolled_from=str(roster.enrolled_from), cells=cells,
             regular=dict(mode=regular.mode, weekdays=regular.weekdays,
                 starts_at=str(rules.parse_time(regular.starts_at)) if regular.starts_at else None,
@@ -69,10 +71,14 @@ def get_board(site, start_date, view="week"):
     for h in history:
         h.employee_count = len({p.employee for p in history_presence if p.day == h.name})
         h.fine_total = sum(float(f.amount) for f in history_fines if str(f.business_date) == str(h.business_date))
+    active_employees = access.staff().rows("Employee", ["name"], filters={"company": doc.company, "status": "Active"})
+    enrolled_all = set(frappe.get_all("Retail Attendance Roster", filters={"company": doc.company}, pluck="employee"))
+    unenrolled_count = len([r for r in active_employees if r.name not in enrolled_all])
     return dict(site=dict(name=doc.name, site_name=doc.site_name, company=doc.company, version=doc.version,
         opens_at=str(rules.parse_time(doc.opens_at)), closes_at=str(rules.parse_time(doc.closes_at))), start_date=str(start), today=str(getdate()),
         currency=frappe.db.get_value("Company", doc.company, "default_currency"),
-        server_time=str(now), current_day=_day(current, employees), rows=rows, history=history, kiosk_available=True)
+        server_time=str(now), current_day=_day(current, employees), rows=rows, history=history,
+        unenrolled_count=unenrolled_count, kiosk_available=True)
 
 
 def _day(doc, employees):

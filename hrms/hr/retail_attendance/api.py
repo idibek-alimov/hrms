@@ -157,10 +157,11 @@ def revoke_device(site, device, version, request_id):
 
 
 @frappe.whitelist(methods=["POST"])
-def correct_presence(site, day, employee, in_time, reason, version, request_id, out_time=None):
+def correct_presence(site, day, employee, in_time, version=0, request_id=None, out_time=None, reason=""):
     from hrms.hr.retail_attendance.corrections import correct
+    request_id = request_id or str(frappe.generate_hash())
     with access.staff().atomic():
-        return correct(site, day, employee, in_time, out_time, reason, version, request_id)
+        return correct(site, day, employee, in_time, out_time, reason or "Ручное исправление", version, request_id)
 
 
 @frappe.whitelist()
@@ -202,22 +203,43 @@ def get_fine_rule(site, work_date=None):
 def get_fine_history(site, employee=None, month=None):
     doc = commands.site_doc(site)
     filters = {"site": site}
-    allowed_employees = access.staff().rows("Employee", ["name"], filters={"company": doc.company})
+    allowed_employees = access.staff().rows("Employee", ["name", "employee_name"], filters={"company": doc.company})
     if not allowed_employees:
         return []
-    filters["employee"] = ["in", [r.name for r in allowed_employees]]
+    emp_names = {r.name: r.employee_name for r in allowed_employees}
+    filters["employee"] = ["in", list(emp_names)]
     if employee:
         access.employee(employee, doc.company)
         filters["employee"] = employee
     if month:
-        filters["business_date"] = ["between", [f"{month}-01", f"{month}-31"]]
-    return frappe.get_list(
+        from erpnext.setup.staff_monthly_view import month_scope
+        period = month_scope(month)
+        filters["business_date"] = ["between", [period["start_date"], period["end_date"]]]
+    rows = frappe.get_list(
         "Retail Attendance Fine Decision",
         filters=filters,
-        fields=["name", "employee", "business_date", "kind", "late_minutes", "amount", "status", "cancellation_reason", "creation"],
+        fields=["name", "employee", "business_date", "kind", "late_minutes", "amount", "status", "pay_change", "cancellation_reason", "creation"],
         order_by="business_date desc, creation desc",
         limit_page_length=100,
     )
+    for r in rows:
+        r["employee_name"] = emp_names.get(r.employee) or r.employee
+    return rows
+
+
+@frappe.whitelist(methods=["POST"])
+def waive_fine(site, decision, reason="", request_id=None):
+    from erpnext.setup.staff_pay_actions import cancel_or_compensate_attendance_fine
+    request_id = request_id or str(frappe.generate_hash())
+    doc = commands.site_doc(site, lock=True)
+    record = frappe.get_doc("Retail Attendance Fine Decision", decision, for_update=True)
+    if record.site != site or record.company != doc.company:
+        access.staff().deny()
+    access.employee(record.employee, doc.company, write=True)
+    note = (commands._text(reason or "", maximum=500, required=False) if reason else "") or "Отмена штрафа"
+    if record.status != "Applied" or not record.pay_change:
+        frappe.throw(frappe._("This fine has already been cancelled or does not have an active deduction."))
+    return cancel_or_compensate_attendance_fine(doc.company, record.employee, record.pay_change, note, request_id)
 
 
 def _kiosk_guard():
